@@ -4,14 +4,14 @@ import httpx
 import time
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from pythonjsonlogger import jsonlogger
+from pythonjsonlogger import json
 
 from app.config import settings
 from app.routers import cnas, stubs
 
 logger = logging.getLogger()
 logHandler = logging.StreamHandler(sys.stdout)
-formatter = jsonlogger.JsonFormatter("%(asctime)s %(levelname)s %(name)s %(message)s")
+formatter = json.JsonFormatter("%(asctime)s %(levelname)s %(name)s %(message)s")
 logHandler.setFormatter(formatter)
 logger.addHandler(logHandler)
 logger.setLevel(settings.LOG_LEVEL.upper())

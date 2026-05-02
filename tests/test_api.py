@@ -13,15 +13,14 @@ def test_health_check():
 def test_verify_unauthorized():
     response = client.post(
         "/api/cnas/verify",
+        headers={"x-internal-api-key": "wrong-key"},
         json={
             "Numéro de l'attestation": "25/1234567",
             "Numéro de l'employeur": "16/0001234"
         }
     )
-    if response.status_code == 422:
-        print(response.json())
-    assert response.status_code == 403
-    assert response.json()["detail"] == "Invalid API Key"
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Invalid or missing API Key"
 
 def test_verify_populate_by_name():
     # This should work because of model_config = {"populate_by_name": True}

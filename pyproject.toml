@@ -1,7 +1,7 @@
 [project]
 name = "scraping-service"
 version = "0.1.0"
-description = "Add your description here"
+description = "High-performance FastAPI service for automated government website verification (CNAS) using Playwright and OCR."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

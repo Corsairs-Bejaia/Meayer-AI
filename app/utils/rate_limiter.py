@@ -1,8 +1,10 @@
 import asyncio
 import time
 import logging
+from app.config import settings
 
 logger = logging.getLogger(__name__)
+
 
 class TokenBucket:
     def __init__(self, rate: float, capacity: int):
@@ -27,11 +29,11 @@ class TokenBucket:
 
             if time.monotonic() - start_time > timeout:
                 return False
-            
+
             await asyncio.sleep(0.1)
 
     def available_tokens(self) -> int:
         return int(self.tokens)
 
-from app.config import settings
-cnas_rate_limiter = TokenBucket(rate=1.0/settings.CNAS_RATE_LIMIT_SECONDS, capacity=1)
+
+cnas_rate_limiter = TokenBucket(rate=1.0 / settings.CNAS_RATE_LIMIT_SECONDS, capacity=1)

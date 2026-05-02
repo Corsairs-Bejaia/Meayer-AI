@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 
+
 class Settings(BaseSettings):
     INTERNAL_API_KEY: str = "shared-secret-with-nestjs-backend"
     LOG_LEVEL: str = "info"
@@ -25,11 +26,12 @@ class Settings(BaseSettings):
     TWO_CAPTCHA_API_KEY: Optional[str] = None
     GEMINI_API_KEY: Optional[str] = None
 
-    CNAS_FORM_ATTESTATION_SELECTOR: str = "input[name=\"numAttest\"]"
-    CNAS_FORM_EMPLOYER_SELECTOR: str = "input[name=\"numCot\"]"
-    CNAS_FORM_CAPTCHA_SELECTOR: str = "input[name=\"captchaValue\"]"
-    CNAS_SUBMIT_SELECTOR: str = "input[type=\"submit\"]"
+    CNAS_FORM_ATTESTATION_SELECTOR: str = 'input[name="numAttest"]'
+    CNAS_FORM_EMPLOYER_SELECTOR: str = 'input[name="numCot"]'
+    CNAS_FORM_CAPTCHA_SELECTOR: str = 'input[name="captchaValue"]'
+    CNAS_SUBMIT_SELECTOR: str = 'input[type="submit"]'
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
 
 settings = Settings()

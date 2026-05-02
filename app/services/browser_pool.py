@@ -1,12 +1,11 @@
 import asyncio
 import logging
-import psutil
-import os
 from typing import List, Optional
 from playwright.async_api import async_playwright, Browser, BrowserContext, Playwright
 from app.config import settings
 
 logger = logging.getLogger(__name__)
+
 
 class BrowserPool:
     def __init__(self):
@@ -18,16 +17,16 @@ class BrowserPool:
     async def start(self):
         logger.info(f"Initializing browser pool with size {settings.BROWSER_POOL_SIZE}")
         self.playwright = await async_playwright().start()
-        
+
         for i in range(settings.BROWSER_POOL_SIZE):
             await self._launch_browser()
-            
+
         self._monitor_task = asyncio.create_task(self._monitor_loop())
 
     async def _launch_browser(self):
         browser = await self.playwright.chromium.launch(
             headless=settings.BROWSER_HEADLESS,
-            args=["--disable-dev-shm-usage", "--no-sandbox"]
+            args=["--disable-dev-shm-usage", "--no-sandbox"],
         )
         self.browsers.append(browser)
         logger.info(f"Launched browser instance (Total: {len(self.browsers)})")
@@ -36,7 +35,7 @@ class BrowserPool:
         logger.info("Closing browser pool...")
         if self._monitor_task:
             self._monitor_task.cancel()
-            
+
         for browser in self.browsers:
             await browser.close()
         if self.playwright:
@@ -52,10 +51,10 @@ class BrowserPool:
                 browser = self.browsers[-1]
             else:
                 browser = healthy_browsers[0]
-            
+
             context = await browser.new_context(
-                viewport={'width': 1280, 'height': 800},
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+                viewport={"width": 1280, "height": 800},
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
             )
             context.set_default_timeout(settings.BROWSER_TIMEOUT_MS)
             return context
@@ -70,7 +69,7 @@ class BrowserPool:
         while True:
             try:
                 await asyncio.sleep(30)
-                
+
                 for i, browser in enumerate(self.browsers):
                     if not browser.is_connected():
                         logger.warning(f"Browser {i} disconnected, restarting...")
@@ -86,14 +85,15 @@ class BrowserPool:
     async def _restart_browser(self, index: int):
         try:
             await self.browsers[index].close()
-        except:
+        except Exception:
             pass
-        
+
         browser = await self.playwright.chromium.launch(
             headless=settings.BROWSER_HEADLESS,
-            args=["--disable-dev-shm-usage", "--no-sandbox"]
+            args=["--disable-dev-shm-usage", "--no-sandbox"],
         )
         self.browsers[index] = browser
         logger.info(f"Restarted browser instance {index}")
+
 
 browser_pool = BrowserPool()

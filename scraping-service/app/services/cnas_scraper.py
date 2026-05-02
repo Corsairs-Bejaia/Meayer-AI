@@ -123,10 +123,8 @@ async def capture_failure_screenshot(page: Page, error_type: str) -> str:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         object_name = f"errors/{timestamp}_{error_type}.png"
         
-        # Take screenshot as bytes
         screenshot_bytes = await page.screenshot(full_page=True)
         
-        # Upload to R2
         public_url = await storage_service.upload_file(screenshot_bytes, object_name)
         return public_url
     except Exception as e:

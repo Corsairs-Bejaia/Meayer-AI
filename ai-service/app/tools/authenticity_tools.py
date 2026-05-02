@@ -302,6 +302,46 @@ class MetadataAnalyzerTool(BaseTool):
             )
         except Exception as e:
             logger.error(f"MetadataAnalyzer error: {e}")
-            return ToolResult(tool_name=self.name,
-                              output={"editing_detected": False, "software": ""},
-                              confidence=0.7, processing_time_ms=0.0, error=str(e))
+from app.tools.gemini_tool import GeminiVisionTool
+
+class AIGenerationDetectorTool(GeminiVisionTool):
+    """
+    Detects if an image was generated or manipulated by AI (GANs, Diffusion models).
+    Looks for text hallucinations, unnatural textures, and inconsistent lighting.
+    """
+    @property
+    def name(self) -> str:
+        return "ai_generation_detector"
+
+    async def execute(self, context: AgentContext, **kwargs) -> ToolResult:
+        prompt = (
+            "You are a forensic document analyst. Examine this image for signs of AI generation (Deepfakes, GANs, Stable Diffusion). "
+            "Look for: 1. Warped or nonsensical text. 2. Unnatural blending in stamps or signatures. "
+            "3. Floating artifacts or 'uncanny valley' effects in background textures. 4. Impossible lighting. "
+            "Return ONLY a JSON object: { 'is_ai_generated': boolean, 'confidence': float, 'reasoning': string }"
+        )
+        kwargs["prompt"] = prompt
+        result = await super().execute(context, **kwargs)
+        
+        if result.output and "text" in result.output:
+            try:
+                import json
+                import re
+                clean_json = re.sub(r"```json\n|\n```", "", result.output["text"]).strip()
+                data = json.loads(clean_json)
+                
+                # Invert confidence: if AI is detected, authenticity confidence drops
+                auth_confidence = 1.0 - (data.get("confidence", 0) if data.get("is_ai_generated") else 0)
+                
+                result.output = {
+                    "is_ai_generated": data.get("is_ai_generated", False),
+                    "ai_score": data.get("confidence", 0),
+                    "reasoning": data.get("reasoning", "")
+                }
+                result.confidence = auth_confidence
+            except Exception as e:
+                logger.error(f"Failed to parse AI detection JSON: {e}")
+                result.output = {"is_ai_generated": False}
+                result.confidence = 0.5
+        
+        return result

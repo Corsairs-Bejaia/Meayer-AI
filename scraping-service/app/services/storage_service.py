@@ -10,9 +10,6 @@ class StorageService:
         self.endpoint_url = f"https://{settings.R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
 
     async def upload_file(self, file_content: bytes, object_name: str, content_type: str = "image/png") -> str:
-        """
-        Uploads bytes to Cloudflare R2 and returns the public URL.
-        """
         async with self.session.client(
             "s3",
             endpoint_url=self.endpoint_url,

@@ -56,7 +56,6 @@ class BaseAgent(ABC):
         self.confidence_threshold = confidence_threshold
 
     async def run(self, context: AgentContext, **kwargs) -> ToolResult:
-        """Try tools in ranked order until confidence >= threshold."""
         best_result: Optional[ToolResult] = None
         
         for tool in self.tools:
@@ -79,7 +78,6 @@ class BaseAgent(ABC):
                 processing_time = (time.time() - start_time) * 1000
                 context.add_trace(self.name, tool.name, 0.0, f"ERROR: {str(e)}")
                 
-        # If no tool met threshold, return the best one
         if best_result:
             context.results[self.name] = best_result
             return best_result

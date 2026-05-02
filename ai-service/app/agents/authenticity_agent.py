@@ -5,18 +5,13 @@ from typing import List, Optional
 from app.agents.base import BaseAgent, BaseTool, ToolResult, AgentContext
 from app.tools.authenticity_tools import (
     ELATool, StampDetectorTool, SignatureDetectorTool,
-    PhotocopyDetectorTool, MetadataAnalyzerTool,
+    PhotocopyDetectorTool, MetadataAnalyzerTool, AIGenerationDetectorTool
 )
 
 logger = logging.getLogger(__name__)
 
 
 class AuthenticityAgent(BaseAgent):
-    """
-    Runs ALL authenticity checks in parallel and aggregates results.
-    Unlike BaseAgent, this does NOT stop at threshold — it always runs all tools.
-    """
-
     @property
     def name(self) -> str:
         return "authenticity"
@@ -29,6 +24,7 @@ class AuthenticityAgent(BaseAgent):
             SignatureDetectorTool(),
             PhotocopyDetectorTool(),
             MetadataAnalyzerTool(),
+            AIGenerationDetectorTool(),
         ]
 
     def __init__(self):
@@ -38,22 +34,21 @@ class AuthenticityAgent(BaseAgent):
         self._signature = SignatureDetectorTool()
         self._photocopy = PhotocopyDetectorTool()
         self._metadata = MetadataAnalyzerTool()
+        self._ai_detect = AIGenerationDetectorTool()
 
     async def run(self, context: AgentContext, **kwargs) -> ToolResult:
         image_bytes: bytes = kwargs.get("image_bytes")
 
-        # Run fast checks in parallel
         quick_results = await asyncio.gather(
             self._stamp.execute(context, **kwargs),
             self._signature.execute(context, **kwargs),
             self._photocopy.execute(context, **kwargs),
+            self._ai_detect.execute(context, **kwargs),
             return_exceptions=True,
         )
 
-        # Always run ELA
         ela_result = await self._ela.execute(context, **kwargs)
 
-        # Adaptive: only run expensive metadata check if quick results are ambiguous
         ambiguous = any(
             isinstance(r, ToolResult) and r.confidence < 0.6
             for r in quick_results
@@ -62,20 +57,18 @@ class AuthenticityAgent(BaseAgent):
         if ambiguous:
             metadata_result = await self._metadata.execute(context, **kwargs)
 
-        # Collect all valid results
         all_results = [r for r in quick_results if isinstance(r, ToolResult)]
         all_results.append(ela_result)
         if metadata_result:
             all_results.append(metadata_result)
 
-        # Weighted aggregation
-        # ELA carries the most weight (0.35), others split the rest
         weights = {
             "ela_analysis": 0.35,
             "stamp_detector": 0.20,
             "signature_detector": 0.20,
             "photocopy_detector": 0.15,
             "metadata_analyzer": 0.10,
+            "ai_generation_detector": 0.10,
         }
 
         weighted_sum = 0.0
@@ -97,7 +90,6 @@ class AuthenticityAgent(BaseAgent):
         authenticity_score = round(aggregate_confidence * 100, 1)
         is_suspicious = aggregate_confidence < 0.5
 
-        # Trace each tool
         for r in all_results:
             context.add_trace(self.name, r.tool_name, r.confidence, str(r.output))
 

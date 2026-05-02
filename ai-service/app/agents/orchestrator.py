@@ -24,16 +24,6 @@ async def _fetch_image(url: str) -> bytes:
 
 
 class AgentOrchestrator:
-    """
-    Coordinates the full 6-agent pipeline.
-    Phases:
-      1. Classify all documents (parallel)
-      2. OCR + Extract per document (parallel, self-correcting)
-      3. Authenticity per document (parallel)
-      4. Consistency (sequential — needs all extractions)
-      5. Scoring (sequential — aggregates everything)
-    """
-
     def __init__(self):
         self.classifier = ClassifierAgent()
         self.ocr = OCRAgent()
@@ -60,7 +50,6 @@ class AgentOrchestrator:
                 except Exception as e:
                     logger.warning(f"Progress callback failed: {e}")
 
-        # Fetch image bytes for each document
         doc_bytes: Dict[int, bytes] = {}
         for i, doc in enumerate(documents):
             url = doc.get("file_url")
@@ -70,7 +59,6 @@ class AgentOrchestrator:
                 except Exception as e:
                     logger.warning(f"Failed to fetch document {i} from {url}: {e}")
 
-        # ─── Phase 1: Classification (parallel) ───
         await _emit("classification", "started")
         classify_tasks = [
             self.classifier.run(
@@ -83,7 +71,6 @@ class AgentOrchestrator:
         classification_results = await asyncio.gather(*classify_tasks, return_exceptions=True)
         await _emit("classification", "completed", context.get_result("classifier"))
 
-        # ─── Phase 2: OCR + Extraction (parallel per doc) ───
         await _emit("ocr_extraction", "started")
 
         async def _ocr_and_extract(i: int, doc: Dict) -> Dict:
@@ -91,7 +78,6 @@ class AgentOrchestrator:
             if not image_bytes:
                 return {}
 
-            # Determine template fields for this document
             doc_type = doc.get("doc_type_hint") or (
                 context.get_result("classifier").output.get("doc_type")
                 if context.get_result("classifier") else "unknown"
@@ -103,11 +89,8 @@ class AgentOrchestrator:
             )
             fields = template.get("fields", [])
 
-            # OCR
             ocr_result = await self.ocr.run(context, image_bytes=image_bytes)
 
-            # Self-correction: if OCR confidence < 0.6, try next tool already handled inside OCRAgent
-            # Extraction
             extraction_result = await self.extraction.run(
                 context,
                 image_bytes=image_bytes,
@@ -129,7 +112,6 @@ class AgentOrchestrator:
         per_doc_results = [r for r in per_doc_results if isinstance(r, dict)]
         await _emit("ocr_extraction", "completed", per_doc_results)
 
-        # ─── Phase 3: Authenticity (parallel per doc) ───
         await _emit("authenticity", "started")
         auth_tasks = [
             self.authenticity.run(context, image_bytes=doc_bytes.get(i))
@@ -139,9 +121,7 @@ class AgentOrchestrator:
         await asyncio.gather(*auth_tasks, return_exceptions=True)
         await _emit("authenticity", "completed", context.get_result("authenticity"))
 
-        # ─── Phase 4: Consistency (sequential) ───
         await _emit("consistency", "started")
-        # Build cross-document field map from per_doc_results
         documents_fields: Dict[str, Dict] = {}
         for r in per_doc_results:
             if isinstance(r, dict):
@@ -151,7 +131,6 @@ class AgentOrchestrator:
         await self.consistency.run(context, documents=documents_fields)
         await _emit("consistency", "completed", context.get_result("consistency"))
 
-        # ─── Phase 5: Scoring (sequential) ───
         await _emit("scoring", "started")
         await self.scoring.run(
             context,

@@ -12,7 +12,7 @@ from app.utils.rate_limiter import cnas_rate_limiter
 
 logger = logging.getLogger(__name__)
 
-async def scrape_cnas(attestation_number: str, employer_number: str):
+async def scrape_cnas(attestation_number: str, employer_number: str, ssn: Optional[str] = None):
     start_time = time.monotonic()
     attempts = 0
     max_attempts = settings.CAPTCHA_MAX_RETRIES
@@ -58,7 +58,7 @@ async def scrape_cnas(attestation_number: str, employer_number: str):
                 await page.wait_for_load_state("networkidle")
                 
                 html_content = await page.content()
-                result = parse_cnas_result(html_content)
+                result = parse_cnas_result(html_content, ssn_to_find=ssn)
                 
                 if result["status"] == "captcha_failed":
                     logger.warning(f"CAPTCHA failed on site (attempt {attempts}), retrying...")

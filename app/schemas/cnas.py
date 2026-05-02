@@ -15,3 +15,19 @@ class CNASVerifyResponse(BaseModel):
     processing_time_ms: int
     error: Optional[str] = None
     screenshot_path: Optional[str] = None
+
+class CNASEmployeeVerifyRequest(BaseModel):
+    attestation_number: str = Field(..., pattern=r"^\d{2}/\d{7}$", examples=["25/1234567"])
+    employer_number: str = Field(..., pattern=r"^\d{2}/\d{7}$", examples=["16/0001234"])
+    ssn: str = Field(..., pattern=r"^\d{12}$", examples=["850101123456"])
+
+class CNASEmployeeVerifyResponse(BaseModel):
+    valid: Optional[bool]
+    status: str
+    employer_name: Optional[str] = None
+    employee_found: Optional[bool] = None
+    employee_name: Optional[str] = None
+    attempts: int
+    processing_time_ms: int
+    error: Optional[str] = None
+    screenshot_path: Optional[str] = None

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.schemas.cnas import CNASVerifyRequest, CNASVerifyResponse
+from app.schemas.cnas import CNASVerifyRequest, CNASVerifyResponse, CNASEmployeeVerifyRequest, CNASEmployeeVerifyResponse
 from app.services.cnas_scraper import scrape_cnas
 from app.dependencies import verify_api_key
 import logging
@@ -33,6 +33,37 @@ async def verify_cnas(request: CNASVerifyRequest):
 
     except Exception as e:
         logger.error(f"Unexpected error in verify_cnas: {e}")
+        return {
+            "valid": None,
+            "status": "error",
+            "error": str(e),
+            "attempts": 0,
+            "processing_time_ms": 0
+        }
+    }
+
+@router.post("/verify-employee", response_model=CNASEmployeeVerifyResponse)
+async def verify_cnas_employee(request: CNASEmployeeVerifyRequest):
+    logger.info(f"Received CNAS employee verification request for SSN {request.ssn} in attestation {request.attestation_number}")
+    
+    try:
+        result = await scrape_cnas(
+            attestation_number=request.attestation_number,
+            employer_number=request.employer_number,
+            ssn=request.ssn
+        )
+        
+        if result["status"] == "rate_limited":
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Service is rate limited. Please try again later.",
+                headers={"Retry-After": "5"}
+            )
+            
+        return result
+
+    except Exception as e:
+        logger.error(f"Unexpected error in verify_cnas_employee: {e}")
         return {
             "valid": None,
             "status": "error",

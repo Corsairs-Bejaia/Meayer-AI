@@ -4,7 +4,7 @@ from typing import Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 
-def parse_cnas_result(html_content: str) -> Dict[str, Any]:
+def parse_cnas_result(html_content: str, ssn_to_find: Optional[str] = None) -> Dict[str, Any]:
     soup = BeautifulSoup(html_content, 'lxml')
     
     result = {
@@ -12,6 +12,8 @@ def parse_cnas_result(html_content: str) -> Dict[str, Any]:
         "status": "not_found",
         "employer_name": None,
         "attestation_status": None,
+        "employee_found": False,
+        "employee_name": None,
         "error_message": None
     }
 
@@ -41,6 +43,18 @@ def parse_cnas_result(html_content: str) -> Dict[str, Any]:
                     cells = row.find_all('td')
                     if len(cells) >= 2:
                         result["attestation_status"] = cells[1].get_text().strip()
+
+                if ssn_to_find:
+                    if ssn_to_find in text:
+                        result["employee_found"] = True
+                        # Try to find the name in the same row or next cell
+                        cells = row.find_all('td')
+                        for i, cell in enumerate(cells):
+                            if ssn_to_find in cell.get_text():
+                                # Usually name is in the next cell or same cell
+                                if len(cells) > i + 1:
+                                    result["employee_name"] = cells[i+1].get_text().strip()
+                                break
     except Exception as e:
         logger.error(f"Error parsing CNAS HTML: {e}")
         result["status"] = "parse_error"

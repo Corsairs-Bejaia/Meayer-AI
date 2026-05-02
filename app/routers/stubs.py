@@ -6,9 +6,6 @@ router = APIRouter(
     dependencies=[Depends(verify_api_key)]
 )
 
-@router.post("/api/cnas/verify-employee", status_code=status.HTTP_501_NOT_IMPLEMENTED)
-async def verify_cnas_employee():
-    return {"status": "not_implemented", "message": "Verify individual employee status is not yet implemented."}
 
 @router.post("/api/mesrs/verify-diploma", status_code=status.HTTP_501_NOT_IMPLEMENTED)
 async def verify_mesrs_diploma():

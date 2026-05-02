@@ -58,11 +58,11 @@ async def unified_swagger_ui():
         swagger_js_url="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js",
         swagger_css_url="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css",
         swagger_ui_parameters={
-            : [
+            "urls": [
                 {"url": "/openapi.json", "name": "1. AI Verification Service"},
                 {"url": "/api/scraping/openapi.json", "name": "2. Scraping Service (Port 8002)"},
             ],
-            : "StandaloneLayout" 
+            "layout": "StandaloneLayout" 
         },
     )
 
@@ -92,15 +92,15 @@ async def health_check():
         pass
 
     return {
-        : "ok",
-        : settings.SERVICE_NAME,
-        : settings.VERSION,
-        : [
-            , "ocr", "extraction",
-            , "consistency", "scoring",
+        "status": "ok",
+        "service": settings.SERVICE_NAME,
+        "version": settings.VERSION,
+        "agents": [
+            "classifier", "ocr", "extraction",
+            "authenticity", "consistency", "scoring",
         ],
-        : settings.ENABLE_GEMINI_FALLBACK,
-        : {"cnas": {"reachable": cnas_reachable, "response_time_ms": cnas_ms}},
+        "gemini_enabled": settings.ENABLE_GEMINI_FALLBACK,
+        "external_services": {"cnas": {"reachable": cnas_reachable, "response_time_ms": cnas_ms}},
     }
 
 
@@ -109,10 +109,10 @@ async def health_check():
 async def metrics():
     
     return {
-        : settings.SERVICE_NAME,
-        : settings.ENABLE_GEMINI_FALLBACK,
-        : settings.DEFAULT_CONFIDENCE_THRESHOLD,
-        : settings.MAX_SELF_CORRECTION_RETRIES,
+        "service": settings.SERVICE_NAME,
+        "gemini_enabled": settings.ENABLE_GEMINI_FALLBACK,
+        "default_confidence": settings.DEFAULT_CONFIDENCE_THRESHOLD,
+        "max_retries": settings.MAX_SELF_CORRECTION_RETRIES,
     }
 
 

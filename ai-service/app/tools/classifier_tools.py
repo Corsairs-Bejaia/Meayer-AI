@@ -9,11 +9,8 @@ from app.tools.gemini_tool import GeminiVisionTool
 logger = logging.getLogger(__name__)
 
 class GeminiClassifierTool(GeminiVisionTool):
-    
     async def execute(self, context: AgentContext, **kwargs) -> ToolResult:
         templates = kwargs.get("available_templates", [])
-        
-        
         slugs = []
         for t in templates:
             if isinstance(t, dict):
@@ -24,9 +21,7 @@ class GeminiClassifierTool(GeminiVisionTool):
         template_list = ", ".join([f"'{s}'" for s in slugs if s])
         
         prompt = (
-            
             f"Based on this image, identify the document type. Return ONLY the JSON slug from this list: {template_list}. "
-            
         )
         kwargs["prompt"] = prompt
         result = await super().execute(context, **kwargs)
@@ -39,33 +34,33 @@ class GeminiClassifierTool(GeminiVisionTool):
 
 
 KEYWORD_PATTERNS = {
-    : [
-        , r"carte\s+d'identit", r"NATIONALE", r"REPUBLIQUE\s+ALGERIENNE",
-        , r"الهوية\s+الوطنية",
+    "national_id": [
+        r"biom[ée]trique", r"carte\s+d'identit", r"NATIONALE", r"REPUBLIQUE\s+ALGERIENNE",
+        r"بطاقة\s+التعريف", r"الهوية\s+الوطنية",
     ],
-    : [
-        , r"mast[eè]re", r"bachelor", r"licence", r"doctorat",
-        , r"دكتوراه", r"ليسانس",
+    "diploma": [
+        r"dipl[oô]me", r"mast[eè]re", r"bachelor", r"licence", r"doctorat",
+        r"شهادة", r"دكتوراه", r"ليسانس",
     ],
-    : [
-        , r"affiliation", r"CNAS", r"caisse\s+nationale",
-        , r"الصندوق\s+الوطني",
+    "affiliation_attestation": [
+        r"attestation", r"affiliation", r"CNAS", r"caisse\s+nationale",
+        r"شهادة\s+الانتساب", r"الصندوق\s+الوطني",
     ],
-    : [
-        , r"contrat", r"accord", r"protocole",
-        , r"عقد",
+    "contract": [
+        r"convention", r"contrat", r"accord", r"protocole",
+        r"اتفاقية", r"عقد",
     ],
-    : [
-        , r"assurance\s+maladie", r"carte\s+de\s+soin",
-        , r"التأمين\s+الصحي",
+    "insurance_card": [
+        r"chifa", r"assurance\s+maladie", r"carte\s+de\s+soin",
+        r"شيفا", r"التأمين\s+الصحي",
     ],
-    : [
-        , r"prescription", r"m[ée]dicament",
-        ,
+    "ordonnance": [
+        r"ordonnance", r"prescription", r"m[ée]dicament",
+        r"وصفة\s+طبية",
     ],
-    : [
-        , r"naissance", r"né\s+le",
-        ,
+    "birth_certificate": [
+        r"acte\s+de\s+naissance", r"naissance", r"né\s+le",
+        r"شهادة\s+الميلاد",
     ],
 }
 
@@ -84,21 +79,17 @@ def _keyword_match(text: str) -> Optional[tuple[str, float]]:
 
 
 class KeywordClassifierTool(BaseTool):
-    
-
     @property
     def name(self) -> str:
         return "keyword_classifier"
 
     async def execute(self, context: AgentContext, **kwargs) -> ToolResult:
-        
         ocr_result = context.get_result("ocr")
         text = ""
         if ocr_result and ocr_result.output:
             text = ocr_result.output.get("text", "")
 
         if not text:
-            
             image_bytes = kwargs.get("image_bytes")
             if image_bytes:
                 try:
@@ -119,7 +110,7 @@ class KeywordClassifierTool(BaseTool):
             return ToolResult(
                 tool_name=self.name,
                 output={"doc_type": doc_type, "reasoning": f"keyword match score={score:.2f}"},
-                confidence=min(score * 2.0, 0.95),  
+                confidence=min(score * 2.0, 0.95),
                 processing_time_ms=0.0,
             )
 
@@ -128,8 +119,6 @@ class KeywordClassifierTool(BaseTool):
 
 
 class VisualSimilarityTool(BaseTool):
-    
-
     @property
     def name(self) -> str:
         return "visual_similarity"

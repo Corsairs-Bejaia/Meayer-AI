@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 def _tesseract_sync(image_bytes: bytes) -> Dict[str, Any]:
-    
     img = Image.open(io.BytesIO(image_bytes))
     
     data = pytesseract.image_to_data(
@@ -40,16 +39,14 @@ def _tesseract_sync(image_bytes: bytes) -> Dict[str, Any]:
     avg_confidence = sum(confidences) / len(confidences) if confidences else 0.0
 
     return {
-        : full_text,
-        : words,
-        : avg_confidence,
-        : len(words),
+        "text": full_text,
+        "words": words,
+        "avg_confidence": avg_confidence,
+        "word_count": len(words),
     }
 
 
 class TesseractTool(BaseTool):
-    
-
     @property
     def name(self) -> str:
         return "tesseract_ocr"

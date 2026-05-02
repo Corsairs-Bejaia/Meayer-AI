@@ -1,165 +1,125 @@
-import logging
 import re
-from typing import Any, Dict, List, Optional
+import logging
+from typing import Dict, List, Optional, Any
 
-from app.agents.base import BaseAgent, BaseTool, ToolResult, AgentContext
-from app.tools.gpt4o_vision_tool import GPT4oExtractorTool
+from app.agents.base import BaseTool, ToolResult, AgentContext
 
 logger = logging.getLogger(__name__)
 
-
 FIELD_PATTERNS = {
-    : re.compile(r"\b(\d{2}/\d{7})\b"),
-    : re.compile(r"\b(\d{2}[/-]\d{2}[/-]\d{4}|\d{4}[/-]\d{2}[/-]\d{2})\b"),
-    : re.compile(r"\b(\d{18})\b"),
-    : re.compile(r"\b(19[5-9]\d|20[0-3]\d)\b"),
-    : re.compile(r"\b(0[5-7]\d{8})\b"),
+    "nin": re.compile(r"\b(\d{18})\b"),
+    "ssn": re.compile(r"\b(\d{2}/\d{7})\b"),
+    "date": re.compile(r"\b(\d{2}[/-]\d{2}[/-]\d{4}|\d{4}[/-]\d{2}[/-]\d{2})\b"),
+    "year": re.compile(r"\b(19[5-9]\d|20[0-3]\d)\b"),
+    "phone": re.compile(r"\b(0[5-7]\d{8})\b"),
 }
 
 
-def _normalize_date(raw: str) -> str:
-    
-    for sep in "/", "-":
-        parts = raw.split(sep)
-        if len(parts) == 3:
-            if len(parts[0]) == 4:  
-                return f"{parts[0]}-{parts[1].zfill(2)}-{parts[2].zfill(2)}"
-            else:  
-                return f"{parts[2]}-{parts[1].zfill(2)}-{parts[0].zfill(2)}"
-    return raw
+def _normalize_date(date_str: str) -> str:
+    date_str = date_str.replace("/", "-")
+    parts = date_str.split("-")
+    if len(parts) == 3:
+        if len(parts[0]) == 4:
+            return date_str
+        return f"{parts[2]}-{parts[1]}-{parts[0]}"
+    return date_str
 
 
 class RegexExtractorTool(BaseTool):
-    
-
     @property
     def name(self) -> str:
         return "regex_extractor"
 
     async def execute(self, context: AgentContext, **kwargs) -> ToolResult:
-        fields: List[Dict] = kwargs.get("fields", [])
-        
         ocr_result = context.get_result("ocr")
-        text = ""
-        if ocr_result and ocr_result.output:
-            text = ocr_result.output.get("text", "")
+        if not ocr_result or not ocr_result.output:
+            return ToolResult(tool_name=self.name, output={"fields": {}}, confidence=0.0, processing_time_ms=0.0)
 
-        if not text or not fields:
-            return ToolResult(tool_name=self.name, output={"fields": {}},
-                              confidence=0.0, processing_time_ms=0.0)
+        text = ocr_result.output.get("text", "")
+        fields_to_extract: List[Dict] = kwargs.get("fields", [])
+        extracted = {}
+        found_count = 0
 
-        extracted: Dict[str, Any] = {}
-        matched_count = 0
+        for field in fields_to_extract:
+            fname = field.get("field_name")
+            ftype = field.get("field_type", "text")
+            regex = field.get("validation_regex")
 
-        for field in fields:
-            fname = field.get("field_name", "")
-            val_regex = field.get("validation_regex")
-
-            
-            if val_regex:
+            pattern = None
+            if regex:
                 try:
-                    m = re.search(val_regex, text, re.IGNORECASE)
-                    if m:
-                        extracted[fname] = {"value": m.group(0).strip(), "confidence": 0.85, "source": "regex"}
-                        matched_count += 1
-                        continue
-                except re.error:
+                    pattern = re.compile(regex, re.IGNORECASE)
+                except Exception:
                     pass
+            if not pattern:
+                pattern = FIELD_PATTERNS.get(ftype)
 
-            
-            for pattern_key, pattern in FIELD_PATTERNS.items():
-                if pattern_key in fname.lower():
-                    m = pattern.search(text)
-                    if m:
-                        val = m.group(1)
-                        if "date" in pattern_key:
-                            val = _normalize_date(val)
-                        extracted[fname] = {"value": val, "confidence": 0.75, "source": "regex_builtin"}
-                        matched_count += 1
-                        break
+            if pattern:
+                match = pattern.search(text)
+                if match:
+                    val = match.group(1) if pattern.groups > 0 else match.group(0)
+                    if ftype == "date":
+                        val = _normalize_date(val)
+                    extracted[fname] = {"value": val, "confidence": 0.85}
+                    found_count += 1
 
-        required_count = sum(1 for f in fields if f.get("is_required", False))
-        matched_required = sum(
-            1 for f in fields
-            if f.get("is_required") and f.get("field_name") in extracted
-        )
-        confidence = matched_required / required_count if required_count > 0 else (
-            matched_count / len(fields) if fields else 0.0
-        )
-
+        confidence = (found_count / len(fields_to_extract)) if fields_to_extract else 0.0
         return ToolResult(
             tool_name=self.name,
             output={"fields": extracted},
-            confidence=min(confidence, 0.85),
+            confidence=confidence,
             processing_time_ms=0.0,
         )
 
 
 class PositionalExtractorTool(BaseTool):
-    
-
     @property
     def name(self) -> str:
         return "positional_extractor"
 
     async def execute(self, context: AgentContext, **kwargs) -> ToolResult:
-        import cv2
-        import numpy as np
-        image_bytes: bytes = kwargs.get("image_bytes")
-        fields: List[Dict] = kwargs.get("fields", [])
+        ocr_result = context.get_result("ocr")
+        if not ocr_result or not ocr_result.output:
+            return ToolResult(tool_name=self.name, output={"fields": {}}, confidence=0.0, processing_time_ms=0.0)
 
-        positional_fields = [f for f in fields if f.get("position_hint")]
-        if not image_bytes or not positional_fields:
-            return ToolResult(tool_name=self.name, output={"fields": {}},
-                              confidence=0.0, processing_time_ms=0.0)
-
-        try:
-            from app.tools.paddleocr_tool import PaddleOCRTool
-            paddle = PaddleOCRTool()
-        except Exception:
-            return ToolResult(tool_name=self.name, output={"fields": {}},
-                              confidence=0.0, processing_time_ms=0.0, error="PaddleOCR unavailable")
-
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        h, w = img.shape[:2]
-
-        extracted: Dict[str, Any] = {}
-        confidences: List[float] = []
-
-        for field in positional_fields:
-            fname = field["field_name"]
-            hint = field["position_hint"]  
-            try:
-                x1 = int(hint["x"] * w)
-                y1 = int(hint["y"] * h)
-                x2 = int((hint["x"] + hint["width"]) * w)
-                y2 = int((hint["y"] + hint["height"]) * h)
-
+        lines = ocr_result.output.get("lines", [])
+        fields_to_extract: List[Dict] = kwargs.get("fields", [])
+        extracted = {}
+        
+        for field in fields_to_extract:
+            hint = field.get("position_hint")
+            if not hint:
+                continue
+            
+            target_x = hint.get("x", 0.5)
+            target_y = hint.get("y", 0.5)
+            
+            best_match = None
+            min_dist = 100.0
+            
+            for line in lines:
+                bbox = line.get("bbox")
+                if not bbox: continue
+                # bbox is usually [[x,y], [x,y], [x,y], [x,y]] or [x,y,w,h]
+                # simplification:
+                if isinstance(bbox[0], list):
+                    cx = (bbox[0][0] + bbox[2][0]) / 2.0
+                    cy = (bbox[0][1] + bbox[2][1]) / 2.0
+                else:
+                    cx = bbox[0] + bbox[2]/2.0
+                    cy = bbox[1] + bbox[3]/2.0
                 
-                x1 = max(0, x1 - 5)
-                y1 = max(0, y1 - 5)
-                x2 = min(w, x2 + 5)
-                y2 = min(h, y2 + 5)
+                dist = ((cx - target_x)**2 + (cy - target_y)**2)**0.5
+                if dist < min_dist:
+                    min_dist = dist
+                    best_match = line.get("text")
+            
+            if best_match and min_dist < 0.1:
+                extracted[field["field_name"]] = {"value": best_match, "confidence": 0.7}
 
-                roi = img[y1:y2, x1:x2]
-                _, buf = cv2.imencode(".png", roi)
-                roi_bytes = buf.tobytes()
-
-                r = await paddle.execute(context, image_bytes=roi_bytes)
-                text = (r.output or {}).get("text", "").strip()
-                conf = r.confidence if text else 0.0
-
-                if text:
-                    extracted[fname] = {"value": text, "confidence": conf, "source": "positional"}
-                    confidences.append(conf)
-            except Exception as e:
-                logger.warning(f"Positional extraction failed for field {fname}: {e}")
-
-        avg_conf = sum(confidences) / len(confidences) if confidences else 0.0
         return ToolResult(
             tool_name=self.name,
             output={"fields": extracted},
-            confidence=avg_conf,
+            confidence=0.5 if extracted else 0.0,
             processing_time_ms=0.0,
         )

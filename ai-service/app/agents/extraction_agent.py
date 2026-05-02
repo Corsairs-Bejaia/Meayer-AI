@@ -133,9 +133,9 @@ class ExtractionAgent(BaseAgent):
         result = ToolResult(
             tool_name=self.name,
             output={
-                : merged,
-                : [f["field_name"] for f in missing],
-                : "hybrid",
+                "extracted_fields": merged,
+                "missing_fields": [f["field_name"] for f in missing],
+                "method": "hybrid",
             },
             confidence=avg_conf,
             processing_time_ms=0.0,

@@ -2,6 +2,12 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from app.agents.base import BaseAgent, BaseTool, ToolResult, AgentContext
+from app.services.layer_registry import (
+    LAYER_DEFINITIONS,
+    DOC_TYPE_TO_LAYER,
+    group_docs_by_layer,
+    get_missing_layers
+)
 
 logger = logging.getLogger(__name__)
 
@@ -15,134 +21,116 @@ class ScoringAgent(BaseAgent):
     def tools(self) -> List[BaseTool]:
         return []
 
-    TIER_WEIGHTS = {
-        : 0.30,
-        : 0.25,
-        : 0.25,
-        : 0.20,
-    }
-
     async def run(self, context: AgentContext, **kwargs) -> ToolResult:
         kyc_result: Optional[Dict] = kwargs.get("kyc_result")
         cnas_result: Optional[Dict] = kwargs.get("cnas_result")
+        casnos_result: Optional[Dict] = kwargs.get("casnos_result")
         documents_submitted: List[str] = kwargs.get("documents_submitted", [])
         required_docs: List[str] = kwargs.get("required_docs", [])
+        per_doc_results: List[Dict] = kwargs.get("per_doc_results", [])
 
+        # 1. Get results from previous agents
         authenticity_result = context.get_result("authenticity")
         consistency_result = context.get_result("consistency")
         extraction_result = context.get_result("extraction")
-        classifier_result = context.get_result("classifier")
+
+        # 2. Group documents by layer
+        docs_by_layer = group_docs_by_layer(documents_submitted)
+        missing_layers = get_missing_layers(documents_submitted)
 
         blockers: List[str] = []
         flags: List[Dict] = []
-        tier_scores: Dict[str, Dict] = {}
+        layer_scores: Dict[str, Dict] = {}
 
-        if classifier_result and classifier_result.output:
-            doc_type = classifier_result.output.get("doc_type", "unknown")
-            if doc_type == "unknown":
-                blockers.append("Irrelevant document uploaded (not a recognized ID or Diploma)")
-        elif not classifier_result:
-             flags.append({"type": "info", "message": "Document classification not performed"})
-
-        kyc_score = 0.0
-        if kyc_result:
-            kyc_passed = kyc_result.get("passed", False)
-            kyc_liveness = float(kyc_result.get("liveness_score", 0.0))
-            if not kyc_passed:
-                blockers.append("KYC verification failed")
-                kyc_score = 0.0
-            else:
-                kyc_score = kyc_liveness * 100
-        else:
-            kyc_score = 50.0
-        tier_scores["identity"] = {
-            : round(kyc_score, 1),
-            : self.TIER_WEIGHTS["identity"],
-            : kyc_result or "KYC not provided",
-        }
-
-        employment_score = 0.0
-        if cnas_result:
-            cnas_valid = cnas_result.get("valid", False)
-            employment_score = 90.0 if cnas_valid else 30.0
-            if not cnas_valid:
-                flags.append({"type": "soft", "message": "CNAS verification failed — manual review needed"})
-        else:
-            employment_score = 50.0
-            flags.append({"type": "info", "message": "CNAS not verified"})
-        tier_scores["employment"] = {
-            : round(employment_score, 1),
-            : self.TIER_WEIGHTS["employment"],
-            : cnas_result or "CNAS not provided",
-        }
-
-        credential_score = 50.0
-        if extraction_result and extraction_result.output:
-            extracted = extraction_result.output.get("extracted_fields", {})
-            has_diploma_info = any(
-                k in extracted for k in ("diploma_specialty", "graduation_year", "university")
-            )
-            credential_score = extraction_result.confidence * 100 if has_diploma_info else 50.0
-        tier_scores["credentials"] = {
-            : round(credential_score, 1),
-            : self.TIER_WEIGHTS["credentials"],
-            : "Based on extraction confidence",
-        }
-
-        integrity_score = 50.0
-        if authenticity_result and authenticity_result.output:
-            integrity_score = authenticity_result.output.get("authenticity_score", 50.0)
-            checks = authenticity_result.output.get("checks", [])
+        # 3. Calculate scores for each layer
+        for lid, defn in LAYER_DEFINITIONS.items():
+            layer_docs = docs_by_layer.get(lid, [])
+            is_satisfied = len(layer_docs) >= defn["required_min"]
             
-            ai_gen_check = next((c for c in checks if c["check"] == "ai_generation_detector"), None)
-            if ai_gen_check and ai_gen_check["details"] and ai_gen_check["details"].get("is_ai_generated"):
-                blockers.append(f"Synthetic Document Detected (AI Generated): {ai_gen_check['details'].get('reasoning')}")
-                integrity_score = 0.0
+            # Base score for satisfying requirements
+            if defn["required_min"] == 0:
+                # Optional layer (L6)
+                score = min(100.0, len(layer_docs) * 50.0)
+            else:
+                score = 100.0 if is_satisfied else (len(layer_docs) / defn["required_min"] * 80.0)
 
-            if integrity_score < 20 and not blockers:
-                blockers.append("All documents failed authenticity check")
-            elif integrity_score < 50:
-                flags.append({"type": "soft", "message": f"Document authenticity score low: {integrity_score}"})
-        tier_scores["document_integrity"] = {
-            : round(integrity_score, 1),
-            : self.TIER_WEIGHTS["document_integrity"],
-            : authenticity_result.output if authenticity_result else "Not checked",
-        }
+            # Adjustments based on quality/validation
+            if lid == "L1": # Identity
+                if kyc_result:
+                    kyc_score = 100.0 if kyc_result.get("passed") else 0.0
+                    score = (score * 0.4) + (kyc_score * 0.6)
+                if not is_satisfied:
+                    blockers.append("L1: Identity document missing")
 
+            elif lid == "L2": # Academic
+                if not is_satisfied:
+                    blockers.append("L2: Academic qualification (Diploma) missing")
+
+            elif lid == "L3": # Standing
+                if not is_satisfied:
+                    blockers.append("L3: Professional standing (Carte/Attestation Ordre) missing")
+
+            elif lid == "L4": # Employment
+                if cnas_result:
+                    cnas_score = 100.0 if cnas_result.get("valid") else 40.0
+                    score = (score * 0.5) + (cnas_score * 0.5)
+
+            elif lid == "L5": # Coverage
+                if casnos_result:
+                    casnos_score = 100.0 if casnos_result.get("valid") else 40.0
+                    score = (score * 0.5) + (casnos_score * 0.5)
+
+            layer_scores[lid] = {
+                "layer": lid,
+                "name": defn["name"],
+                "score": round(score, 1),
+                "weight": defn["weight"],
+                "documents_submitted": layer_docs,
+                "documents_required": defn["required_min"],
+                "is_satisfied": is_satisfied,
+            }
+
+        # 4. Consistency & Authenticity penalties
         if consistency_result and consistency_result.output:
-            cons_score = consistency_result.output.get("consistency_score", 100.0)
-            hard_flags = [f for f in consistency_result.output.get("flags", []) if f.get("type") == "hard"]
-            if hard_flags:
-                blockers.extend(f["message"] for f in hard_flags)
-            if cons_score < 50:
-                flags.append({"type": "soft", "message": f"Low consistency score: {cons_score}"})
+            c_score = consistency_result.output.get("consistency_score", 100.0)
+            if c_score < 70.0:
+                flags.append({"type": "hard", "message": f"Low cross-document consistency ({c_score}%)"})
+            for flag in consistency_result.output.get("flags", []):
+                flags.append(flag)
 
-        if blockers:
-            final_score = 0.0
-        else:
-            final_score = sum(
-                tier_scores[t]["score"] * self.TIER_WEIGHTS[t]
-                for t in self.TIER_WEIGHTS
-            )
-            optional_submitted = [d for d in documents_submitted if d not in required_docs]
-            final_score = min(100.0, final_score + len(optional_submitted) * 5)
+        if authenticity_result and authenticity_result.output:
+            a_score = authenticity_result.output.get("authenticity_score", 100.0)
+            if a_score < 80.0:
+                flags.append({"type": "hard", "message": f"Suspicious document authenticity ({a_score}%)"})
 
+        # 5. Final weighted score
+        final_score = 0.0
+        if not blockers:
+            for lid, ls in layer_scores.items():
+                final_score += ls["score"] * ls["weight"]
+            
+            # Apply consistency penalty to final score
+            if consistency_result:
+                c_conf = consistency_result.confidence
+                final_score *= (0.8 + 0.2 * c_conf)
+
+        # 6. Aggregate results
         coverage = {
-            : len(documents_submitted),
-            : len(required_docs),
-            : [d for d in required_docs if d not in documents_submitted],
-            : [d for d in documents_submitted if d not in required_docs],
+            "total_submitted": len(documents_submitted),
+            "layers_covered": sum(1 for ls in layer_scores.values() if ls["is_satisfied"]),
+            "layers_total": len(LAYER_DEFINITIONS),
+            "missing_layers": [m["name"] for m in missing_layers],
         }
 
         result = ToolResult(
-            tool_name="tiered_scoring",
+            tool_name="multi_layer_scoring",
             output={
-                : round(final_score, 1),
-                : tier_scores,
-                : blockers,
-                : flags,
-                : coverage,
-                : "rejected" if blockers else ("review" if flags else "approved"),
+                "score": round(final_score, 1),
+                "layer_scores": layer_scores,
+                "blockers": blockers,
+                "flags": flags,
+                "documents_coverage": coverage,
+                "decision": "rejected" if blockers else ("review" if flags else "approved"),
             },
             confidence=1.0,
             processing_time_ms=0.0,

@@ -1,120 +1,99 @@
 [
   {
-    "slug": "dz-national-id-v1",
+    "slug": "dz-national-id",
     "doc_type": "national_id",
     "name": "Algerian Biometric National ID",
+    "layer": "L1",
     "fields": [
-      {
-        "field_name": "full_name",
-        "field_type": "text",
-        "is_required": true,
-        "description": "Full name in Latin characters",
-        "position_hint": {"x": 0.35, "y": 0.22, "width": 0.45, "height": 0.08}
-      },
-      {
-        "field_name": "nin",
-        "field_type": "text",
-        "is_required": true,
-        "description": "18-digit National Identification Number",
-        "validation_regex": "^\\d{18}$",
-        "position_hint": {"x": 0.35, "y": 0.12, "width": 0.45, "height": 0.05}
-      },
-      {
-        "field_name": "date_of_birth",
-        "field_type": "date",
-        "is_required": true,
-        "position_hint": {"x": 0.35, "y": 0.35, "width": 0.25, "height": 0.05}
-      },
-      {
-        "field_name": "place_of_birth",
-        "field_type": "text",
-        "is_required": false,
-        "position_hint": {"x": 0.35, "y": 0.42, "width": 0.45, "height": 0.05}
-      },
-      {
-        "field_name": "expiry_date",
-        "field_type": "date",
-        "is_required": true,
-        "position_hint": {"x": 0.65, "y": 0.85, "width": 0.25, "height": 0.05}
-      }
+      {"field_name": "full_name", "field_type": "text", "is_required": true},
+      {"field_name": "nin", "field_type": "text", "is_required": true, "validation_regex": "^\\d{18}$"},
+      {"field_name": "date_of_birth", "field_type": "date", "is_required": true}
     ]
   },
   {
-    "slug": "dz-cnas-affiliation-v1",
+    "slug": "dz-medical-diploma",
+    "doc_type": "diplome_medecine",
+    "name": "Diplôme de Docteur en Médecine",
+    "layer": "L2",
+    "fields": [
+      {"field_name": "doctor_name", "field_type": "text", "is_required": true},
+      {"field_name": "university", "field_type": "text", "is_required": true},
+      {"field_name": "graduation_date", "field_type": "date", "is_required": true}
+    ]
+  },
+  {
+    "slug": "dz-residanat-diploma",
+    "doc_type": "diplome_residanat",
+    "name": "Diplôme de Résidanat (Specialty)",
+    "layer": "L2",
+    "fields": [
+      {"field_name": "doctor_name", "field_type": "text", "is_required": true},
+      {"field_name": "specialty", "field_type": "text", "is_required": true},
+      {"field_name": "graduation_date", "field_type": "date", "is_required": true}
+    ]
+  },
+  {
+    "slug": "dz-ordre-card",
+    "doc_type": "carte_professionnelle_medecin",
+    "name": "Carte Professionnelle / Attestation Ordre",
+    "layer": "L3",
+    "fields": [
+      {"field_name": "doctor_name", "field_type": "text", "is_required": true},
+      {"field_name": "ordre_registration_number", "field_type": "text", "is_required": true},
+      {"field_name": "specialty", "field_type": "text", "is_required": true}
+    ]
+  },
+  {
+    "slug": "dz-cnas-affiliation",
     "doc_type": "affiliation_attestation",
-    "name": "CNAS Affiliation Attestation",
+    "name": "Attestation d'affiliation employeur CNAS",
+    "layer": "L4",
     "fields": [
-      {
-        "field_name": "employer_name",
-        "field_type": "text",
-        "is_required": true,
-        "description": "Raison Sociale of the employer",
-        "position_hint": {"x": 0.2, "y": 0.25, "width": 0.6, "height": 0.1}
-      },
-      {
-        "field_name": "cnas_number",
-        "field_type": "text",
-        "is_required": true,
-        "validation_regex": "^\\d{2}/\\d{7}$",
-        "position_hint": {"x": 0.2, "y": 0.35, "width": 0.4, "height": 0.05}
-      },
-      {
-        "field_name": "full_name",
-        "field_type": "text",
-        "is_required": true,
-        "description": "Employee full name",
-        "position_hint": {"x": 0.2, "y": 0.45, "width": 0.6, "height": 0.08}
-      },
-      {
-        "field_name": "ssn",
-        "field_type": "text",
-        "is_required": true,
-        "validation_regex": "^\\d{12}$",
-        "position_hint": {"x": 0.2, "y": 0.55, "width": 0.4, "height": 0.05}
-      },
-      {
-        "field_name": "issue_date",
-        "field_type": "date",
-        "is_required": true,
-        "position_hint": {"x": 0.7, "y": 0.85, "width": 0.2, "height": 0.05}
-      }
+      {"field_name": "full_name", "field_type": "text", "is_required": true},
+      {"field_name": "ssn", "field_type": "text", "is_required": true, "validation_regex": "^\\d{2}/\\d{7}$"},
+      {"field_name": "employer_name", "field_type": "text", "is_required": true}
     ]
   },
   {
-    "slug": "dz-university-diploma-v1",
-    "doc_type": "diploma",
-    "name": "Algerian University Diploma",
+    "slug": "dz-chifa-card",
+    "doc_type": "carte_chifa",
+    "name": "Carte Chifa",
+    "layer": "L5",
     "fields": [
-      {
-        "field_name": "university_name",
-        "field_type": "text",
-        "is_required": true,
-        "position_hint": {"x": 0.1, "y": 0.1, "width": 0.8, "height": 0.15}
-      },
-      {
-        "field_name": "full_name",
-        "field_type": "text",
-        "is_required": true,
-        "position_hint": {"x": 0.2, "y": 0.4, "width": 0.6, "height": 0.08}
-      },
-      {
-        "field_name": "degree_type",
-        "field_type": "text",
-        "is_required": true,
-        "description": "Licence, Master, Doctorat, etc."
-      },
-      {
-        "field_name": "specialty",
-        "field_type": "text",
-        "is_required": true,
-        "position_hint": {"x": 0.2, "y": 0.55, "width": 0.6, "height": 0.05}
-      },
-      {
-        "field_name": "graduation_year",
-        "field_type": "integer",
-        "is_required": true,
-        "validation_regex": "^(19|20)\\d{2}$"
-      }
+      {"field_name": "full_name", "field_type": "text", "is_required": true},
+      {"field_name": "ssn", "field_type": "text", "is_required": true}
+    ]
+  },
+  {
+    "slug": "dz-casnos-affiliation",
+    "doc_type": "attestation_affiliation_casnos",
+    "name": "Attestation d'affiliation CASNOS",
+    "layer": "L5",
+    "fields": [
+      {"field_name": "full_name", "field_type": "text", "is_required": true},
+      {"field_name": "casnos_number", "field_type": "text", "is_required": true}
+    ]
+  },
+  {
+    "slug": "dz-medical-prescription",
+    "doc_type": "ordonnance_recente",
+    "name": "Ordonnance Médicale Récente",
+    "layer": "L6",
+    "fields": [
+      {"field_name": "doctor_name", "field_type": "text", "is_required": true},
+      {"field_name": "prescription_date", "field_type": "date", "is_required": true},
+      {"field_name": "ordre_registration_number", "field_type": "text", "is_required": false}
+    ]
+  },
+  {
+    "slug": "dz-medical-stamp",
+    "doc_type": "cachet_professionnel",
+    "name": "Cachet professionnel (Tampon)",
+    "layer": "L6",
+    "fields": [
+      {"field_name": "doctor_name", "field_type": "text", "is_required": true},
+      {"field_name": "specialty", "field_type": "text", "is_required": false},
+      {"field_name": "ordre_registration_number", "field_type": "text", "is_required": false}
     ]
   }
 ]

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from app.agents.base import AgentContext
 from app.agents.scoring_agent import ScoringAgent
 from app.dependencies import verify_api_key
-from app.schemas.schemas import ScoreRequest, ScoreResponse, TierScore
+from app.schemas.schemas import ScoreRequest, ScoreResponse, LayerScore
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/score", tags=["score"])
@@ -20,7 +20,6 @@ async def calculate_score(
     start = time.time()
     context = AgentContext()
 
-    
     if request.authenticity_results:
         from app.agents.base import ToolResult
         context.results["authenticity"] = ToolResult(
@@ -42,6 +41,7 @@ async def calculate_score(
         context,
         kyc_result=request.kyc_result,
         cnas_result=request.cnas_result,
+        casnos_result=request.casnos_result,
         documents_submitted=request.documents_submitted,
         required_docs=request.required_docs,
     )
@@ -49,14 +49,22 @@ async def calculate_score(
     output = result.output or {}
     elapsed = round((time.time() - start) * 1000, 1)
 
-    tier_scores = {
-        k: TierScore(score=v["score"], weight=v["weight"], details=v.get("details"))
-        for k, v in output.get("tier_scores", {}).items()
-    }
+    layer_scores = {}
+    for k, v in output.get("layer_scores", {}).items():
+        layer_scores[k] = LayerScore(
+            layer=v.get("layer", k),
+            name=v.get("name", k),
+            score=v.get("score", 0.0),
+            weight=v.get("weight", 0.0),
+            documents_submitted=v.get("documents_submitted", []),
+            documents_required=v.get("documents_required", 1),
+            is_satisfied=v.get("is_satisfied", False),
+            details=v.get("details"),
+        )
 
     return ScoreResponse(
         score=output.get("score", 0.0),
-        tier_scores=tier_scores,
+        layer_scores=layer_scores,
         blockers=output.get("blockers", []),
         flags=output.get("flags", []),
         documents_coverage=output.get("documents_coverage", {}),

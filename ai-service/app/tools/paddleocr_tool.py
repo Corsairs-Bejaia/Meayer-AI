@@ -10,10 +10,8 @@ logger = logging.getLogger(__name__)
 
 @lru_cache(maxsize=1)
 def _get_paddle_ocr():
-    
     try:
         from paddleocr import PaddleOCR
-        
         ocr = PaddleOCR(
             use_angle_cls=True,
             lang="arabic",       
@@ -27,8 +25,6 @@ def _get_paddle_ocr():
 
 
 def _run_ocr_sync(image_bytes: bytes) -> List[Any]:
-    
-    import tempfile, os
     ocr = _get_paddle_ocr()
     if ocr is None:
         return []
@@ -42,8 +38,6 @@ def _run_ocr_sync(image_bytes: bytes) -> List[Any]:
 
 
 class PaddleOCRTool(BaseTool):
-    
-
     @property
     def name(self) -> str:
         return "paddle_ocr"
@@ -62,7 +56,6 @@ class PaddleOCRTool(BaseTool):
         loop = asyncio.get_event_loop()
         raw_result = await loop.run_in_executor(None, _run_ocr_sync, image_bytes)
 
-        
         lines = []
         full_text_parts = []
         confidences = []
@@ -82,10 +75,10 @@ class PaddleOCRTool(BaseTool):
         return ToolResult(
             tool_name=self.name,
             output={
-                : full_text,
-                : lines,
-                : avg_confidence,
-                : len(lines),
+                "text": full_text,
+                "lines": lines,
+                "avg_confidence": avg_confidence,
+                "line_count": len(lines),
             },
             confidence=avg_confidence,
             processing_time_ms=0.0,

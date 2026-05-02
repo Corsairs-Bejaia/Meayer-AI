@@ -15,6 +15,7 @@ class Template(BaseModel):
     slug: str
     doc_type: str
     name: str
+    layer: Optional[str] = None  # New field for 6-layer model
     fields: List[TemplateField] = []
     sample_image_url: Optional[str] = None
 
@@ -23,6 +24,7 @@ class DocumentInput(BaseModel):
     file_url: str
     doc_type_hint: Optional[str] = None
     template_slug: Optional[str] = None
+    layer: Optional[str] = None
 
 
 class PipelineRequest(BaseModel):
@@ -31,6 +33,7 @@ class PipelineRequest(BaseModel):
     stream: bool = False
     kyc_result: Optional[Dict[str, Any]] = None
     cnas_result: Optional[Dict[str, Any]] = None
+    casnos_result: Optional[Dict[str, Any]] = None
     required_docs: List[str] = []
 
 
@@ -122,21 +125,27 @@ class ConsistencyResponse(BaseModel):
 class ScoreRequest(BaseModel):
     kyc_result: Optional[Dict[str, Any]] = None
     cnas_result: Optional[Dict[str, Any]] = None
+    casnos_result: Optional[Dict[str, Any]] = None
     documents_submitted: List[str] = []
     required_docs: List[str] = []
     authenticity_results: Optional[Dict[str, Any]] = None
     consistency_result: Optional[Dict[str, Any]] = None
 
 
-class TierScore(BaseModel):
+class LayerScore(BaseModel):
+    layer: str
+    name: str
     score: float
     weight: float
-    details: Any
+    documents_submitted: List[str] = []
+    documents_required: int = 1
+    is_satisfied: bool
+    details: Optional[str] = None
 
 
 class ScoreResponse(BaseModel):
     score: float
-    tier_scores: Dict[str, TierScore]
+    layer_scores: Dict[str, LayerScore]
     blockers: List[str]
     flags: List[Dict[str, Any]]
     documents_coverage: Dict[str, Any]

@@ -26,8 +26,6 @@ def _bytes_to_data_url(image_bytes: bytes) -> str:
 
 
 class GPT4oVisionOCRTool(BaseTool):
-    
-
     @property
     def name(self) -> str:
         return "gpt4o_vision_ocr"
@@ -56,14 +54,14 @@ class GPT4oVisionOCRTool(BaseTool):
                 max_tokens=2000,
                 messages=[
                     {
-                        : "user",
-                        : [
+                        "role": "user",
+                        "content": [
                             {
-                                : "text",
-                                : (
-                                    
-                                    
-                                    
+                                "type": "text",
+                                "text": (
+                                    "Extract all text from this document image. "
+                                    "Return the raw text exactly as written, preserving layout. "
+                                    "Include both French and Arabic text if present."
                                 ),
                             },
                             {"type": "image_url", "image_url": {"url": data_url}},
@@ -73,7 +71,6 @@ class GPT4oVisionOCRTool(BaseTool):
             )
 
             extracted_text = response.choices[0].message.content or ""
-            
             confidence = 0.95 if extracted_text.strip() else 0.1
 
             return ToolResult(
@@ -92,8 +89,6 @@ class GPT4oVisionOCRTool(BaseTool):
 
 
 class GPT4oClassifierTool(BaseTool):
-    
-
     @property
     def name(self) -> str:
         return "gpt4o_classifier"
@@ -124,16 +119,15 @@ class GPT4oClassifierTool(BaseTool):
                 response_format={"type": "json_object"},
                 messages=[
                     {
-                        : "user",
-                        : [
+                        "role": "user",
+                        "content": [
                             {
-                                : "text",
-                                : (
+                                "type": "text",
+                                "text": (
                                     f"Classify this Algerian administrative document. "
                                     f"Choose from: {template_list}. "
-                                    
-                                    
-                                    
+                                    "Return JSON: {\"doc_type\": \"...\", \"confidence\": 0.0-1.0, \"language\": \"fr|ar|mixed\", \"reasoning\": \"...\"}. "
+                                    "Use only the provided doc_types."
                                 ),
                             },
                             {"type": "image_url", "image_url": {"url": data_url}},
@@ -161,8 +155,6 @@ class GPT4oClassifierTool(BaseTool):
 
 
 class GPT4oExtractorTool(BaseTool):
-    
-
     @property
     def name(self) -> str:
         return "gpt4o_extractor"
@@ -197,15 +189,15 @@ class GPT4oExtractorTool(BaseTool):
                 response_format={"type": "json_object"},
                 messages=[
                     {
-                        : "user",
-                        : [
+                        "role": "user",
+                        "content": [
                             {
-                                : "text",
-                                : (
+                                "type": "text",
+                                "text": (
                                     f"Extract these fields from this {doc_type} document:\n"
                                     f"{field_descriptions}\n\n"
-                                    
-                                    
+                                    "Return JSON: {\"field_name\": {\"value\": \"...\", \"confidence\": 0.0-1.0}}. "
+                                    "Set value to null if not found."
                                 ),
                             },
                             {"type": "image_url", "image_url": {"url": data_url}},
@@ -218,7 +210,6 @@ class GPT4oExtractorTool(BaseTool):
             content = response.choices[0].message.content or "{}"
             extracted = json.loads(content)
 
-            
             confidences = [
                 v.get("confidence", 0.9)
                 for v in extracted.values()

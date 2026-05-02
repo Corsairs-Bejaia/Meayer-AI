@@ -18,16 +18,16 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 _TITLES = re.compile(
-    ,
+    r"\b(dr|prof|pr|mr|mme|mlle|m\.|docteur|professeur)\b\.?\s*",
     re.IGNORECASE,
 )
 _ARABIC_SCRIPT = re.compile(r"[\u0600-\u06FF]")
 
 
 _PREFIX_MAP = {
-    : "ben", "bel": "bel", "bou": "bou",
-    : "abd", "abde": "abd", "abdel": "abd",
-    : "el", "al": "el",
+    "ben": "ben", "bel": "bel", "bou": "bou",
+    "abd": "abd", "abde": "abd", "abdel": "abd",
+    "el": "el", "al": "el",
 }
 
 
@@ -64,7 +64,6 @@ def _is_arabic(text: str) -> bool:
 
 
 def _token_set_ratio(a: str, b: str) -> float:
-    
     tokens_a = set(a.split())
     tokens_b = set(b.split())
     intersection = tokens_a & tokens_b
@@ -84,8 +83,6 @@ def _token_set_ratio(a: str, b: str) -> float:
 
 
 class NameMatcher:
-    
-
     MATCH_THRESHOLD = 0.75
 
     @staticmethod
@@ -102,13 +99,10 @@ class NameMatcher:
         norm_a = NameMatcher.normalize(name_a)
         norm_b = NameMatcher.normalize(name_b)
 
-        
         direct = _token_set_ratio(norm_a, norm_b)
 
-        
         cross = 0.0
         if _is_arabic(name_a) != _is_arabic(name_b):
-            
             if _is_arabic(name_a) and _HAS_UNIDECODE:
                 lat_a = unidecode(norm_a)
                 cross = _token_set_ratio(lat_a, norm_b)

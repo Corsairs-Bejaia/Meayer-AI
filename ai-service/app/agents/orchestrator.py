@@ -10,6 +10,7 @@ from app.agents.extraction_agent import ExtractionAgent
 from app.agents.authenticity_agent import AuthenticityAgent
 from app.agents.consistency_agent import ConsistencyAgent
 from app.agents.scoring_agent import ScoringAgent
+from app.services.layer_registry import DOC_TYPE_TO_LAYER
 
 logger = logging.getLogger(__name__)
 
@@ -98,10 +99,10 @@ class AgentOrchestrator:
                 doc_type=doc_type,
             )
             return {
-                : i,
-                : doc_type,
-                : ocr_result.output,
-                : extraction_result.output,
+                "doc_index": i,
+                "doc_type": doc_type,
+                "ocr": ocr_result.output,
+                "extraction": extraction_result.output,
             }
 
         extraction_tasks = [
@@ -132,9 +133,18 @@ class AgentOrchestrator:
         await _emit("consistency", "completed", context.get_result("consistency"))
 
         await _emit("scoring", "started")
+        doc_types_submitted = []
+        for i, doc in enumerate(documents):
+            dt = doc.get("doc_type_hint") or (
+                context.get_result("classifier").output.get("doc_type")
+                if context.get_result("classifier") else "unknown"
+            )
+            doc_types_submitted.append(dt)
+
         await self.scoring.run(
             context,
-            documents_submitted=[d.get("doc_type_hint", "unknown") for d in documents],
+            documents_submitted=doc_types_submitted,
+            per_doc_results=per_doc_results,
             **extra_kwargs,
         )
         await _emit("scoring", "completed", context.get_result("scoring"))

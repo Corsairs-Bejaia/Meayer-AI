@@ -18,6 +18,13 @@ class Settings(BaseSettings):
     BROWSER_HEADLESS: bool = True
     BROWSER_TIMEOUT_MS: int = 30000
     PAGE_LOAD_TIMEOUT_MS: int = 30000
+    
+    # Cloudflare R2 Storage Configuration
+    R2_ACCOUNT_ID: str = ""
+    R2_ACCESS_KEY_ID: str = ""
+    R2_SECRET_ACCESS_KEY: str = ""
+    R2_BUCKET: str = ""
+    R2_PUBLIC_URL: str = ""
 
     CACHE_ENABLED: bool = True
     CACHE_TTL_SECONDS: int = 86400

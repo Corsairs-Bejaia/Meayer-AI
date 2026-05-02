@@ -10,6 +10,7 @@ from app.services.browser_pool import browser_pool
 from app.services.captcha_solver import solve_captcha
 from app.services.result_parser import parse_cnas_result
 from app.utils.rate_limiter import cnas_rate_limiter
+from app.services.storage_service import storage_service
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +111,7 @@ async def scrape_cnas(
             "error": str(e),
             "attempts": attempts,
             "processing_time_ms": int((time.monotonic() - start_time) * 1000),
-            "screenshot_path": screenshot_path,
+            "screenshot_url": screenshot_path,
         }
     finally:
         await page.close()
@@ -119,11 +120,15 @@ async def scrape_cnas(
 
 async def capture_failure_screenshot(page: Page, error_type: str) -> str:
     try:
-        os.makedirs("/tmp/scraping-errors", exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        path = f"/tmp/scraping-errors/{timestamp}_{error_type}.png"
-        await page.screenshot(path=path, full_page=True)
-        return path
+        object_name = f"errors/{timestamp}_{error_type}.png"
+        
+        # Take screenshot as bytes
+        screenshot_bytes = await page.screenshot(full_page=True)
+        
+        # Upload to R2
+        public_url = await storage_service.upload_file(screenshot_bytes, object_name)
+        return public_url
     except Exception as e:
-        logger.error(f"Failed to capture screenshot: {e}")
+        logger.error(f"Failed to capture or upload screenshot: {e}")
         return ""

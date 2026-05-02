@@ -44,6 +44,14 @@ class ScoringAgent(BaseAgent):
         flags: List[Dict] = []
         tier_scores: Dict[str, Dict] = {}
 
+        # ── Tier 0: Classification Check (Blocker) ──
+        if classifier_result and classifier_result.output:
+            doc_type = classifier_result.output.get("doc_type", "unknown")
+            if doc_type == "unknown":
+                blockers.append("Irrelevant document uploaded (not a recognized ID or Diploma)")
+        elif not classifier_result:
+             flags.append({"type": "info", "message": "Document classification not performed"})
+
         # ── Tier 1: Identity (30%) ──
         kyc_score = 0.0
         if kyc_result:

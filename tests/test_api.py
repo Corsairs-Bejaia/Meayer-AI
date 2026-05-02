@@ -18,6 +18,8 @@ def test_verify_unauthorized():
             "Numéro de l'employeur": "16/0001234"
         }
     )
+    if response.status_code == 422:
+        print(response.json())
     assert response.status_code == 403
     assert response.json()["detail"] == "Invalid API Key"
 

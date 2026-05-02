@@ -10,9 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class ExtractionAgent(BaseAgent):
-    """
-    Template-aware field extraction with hybrid strategy and self-correction.
-    """
+    
 
     @property
     def name(self) -> str:
@@ -41,21 +39,21 @@ class ExtractionAgent(BaseAgent):
             return ToolResult(tool_name=self.name, output={"fields": {}},
                               confidence=0.0, processing_time_ms=0.0, error="No fields defined")
 
-        # Step 1: Positional extraction for fields with position_hint
+        
         positional_result = await self._positional.execute(context, **kwargs)
         context.add_trace(self.name, "positional_extractor",
                           positional_result.confidence, "positional pass")
         merged: Dict[str, Any] = dict(positional_result.output.get("fields", {}))
 
-        # Step 2: Regex extraction for remaining fields
+        
         regex_result = await self._regex.execute(context, **kwargs)
         context.add_trace(self.name, "regex_extractor",
                           regex_result.confidence, "regex pass")
         for fname, fdata in regex_result.output.get("fields", {}).items():
-            if fname not in merged:  # Don't override positional results
+            if fname not in merged:  
                 merged[fname] = fdata
 
-        # Step 3: Find missing required fields
+        
         required_fields = [f for f in fields if f.get("is_required", False)]
         missing = [
             f for f in required_fields
@@ -63,7 +61,7 @@ class ExtractionAgent(BaseAgent):
             or merged[f["field_name"]].get("confidence", 0) < 0.4
         ]
 
-        # Self-correction loop: try LLM for missing fields
+        
         retries = 0
         while missing and retries < settings.MAX_SELF_CORRECTION_RETRIES:
             retries += 1
@@ -83,14 +81,14 @@ class ExtractionAgent(BaseAgent):
                     if isinstance(fdata, dict) and fdata.get("value") is not None:
                         merged[fname] = {**fdata, "source": "llm_vision"}
 
-            # Recheck which are still missing
+            
             missing = [
                 f for f in required_fields
                 if f["field_name"] not in merged
                 or merged[f["field_name"]].get("confidence", 0) < 0.4
             ]
 
-        # Post-processing: validate and coerce field types
+        
         for field in fields:
             fname = field["field_name"]
             if fname not in merged:
@@ -102,7 +100,7 @@ class ExtractionAgent(BaseAgent):
             ftype = field.get("field_type", "text")
             val_regex = field.get("validation_regex")
 
-            # Type coercion
+            
             try:
                 if ftype == "integer":
                     merged[fname]["value"] = int(str(val).strip())
@@ -116,18 +114,18 @@ class ExtractionAgent(BaseAgent):
             except (ValueError, TypeError):
                 pass
 
-            # Regex validation
+            
             if val_regex:
                 import re
                 if not re.fullmatch(val_regex, str(merged[fname].get("value", "")), re.IGNORECASE):
                     merged[fname]["confidence"] = 0.0
                     merged[fname]["validation_failed"] = True
 
-        # Calculate overall confidence
+        
         all_confs = [v.get("confidence", 0) for v in merged.values() if isinstance(v, dict)]
         avg_conf = sum(all_confs) / len(all_confs) if all_confs else 0.0
 
-        # Penalize if required fields are still missing
+        
         if missing:
             penalty = len(missing) / len(required_fields)
             avg_conf *= (1 - penalty * 0.5)
@@ -135,9 +133,9 @@ class ExtractionAgent(BaseAgent):
         result = ToolResult(
             tool_name=self.name,
             output={
-                "extracted_fields": merged,
-                "missing_required": [f["field_name"] for f in missing],
-                "extraction_method": "hybrid",
+                : merged,
+                : [f["field_name"] for f in missing],
+                : "hybrid",
             },
             confidence=avg_conf,
             processing_time_ms=0.0,

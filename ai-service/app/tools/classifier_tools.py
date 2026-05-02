@@ -9,13 +9,11 @@ from app.tools.gemini_tool import GeminiVisionTool
 logger = logging.getLogger(__name__)
 
 class GeminiClassifierTool(GeminiVisionTool):
-    """
-    Refined Gemini vision for classification.
-    """
+    
     async def execute(self, context: AgentContext, **kwargs) -> ToolResult:
         templates = kwargs.get("available_templates", [])
         
-        # Robustly handle both dicts and objects
+        
         slugs = []
         for t in templates:
             if isinstance(t, dict):
@@ -26,9 +24,9 @@ class GeminiClassifierTool(GeminiVisionTool):
         template_list = ", ".join([f"'{s}'" for s in slugs if s])
         
         prompt = (
-            "You are a professional Algerian document classifier. "
+            
             f"Based on this image, identify the document type. Return ONLY the JSON slug from this list: {template_list}. "
-            "If none match, return 'unknown'."
+            
         )
         kwargs["prompt"] = prompt
         result = await super().execute(context, **kwargs)
@@ -39,35 +37,35 @@ class GeminiClassifierTool(GeminiVisionTool):
         
         return result
 
-# Keyword patterns for each document type
+
 KEYWORD_PATTERNS = {
-    "national_id": [
-        r"carte\s+national", r"carte\s+d'identit", r"NATIONALE", r"REPUBLIQUE\s+ALGERIENNE",
-        r"بطاقة\s+التعريف", r"الهوية\s+الوطنية",
+    : [
+        , r"carte\s+d'identit", r"NATIONALE", r"REPUBLIQUE\s+ALGERIENNE",
+        , r"الهوية\s+الوطنية",
     ],
-    "diploma": [
-        r"dipl[oô]me", r"mast[eè]re", r"bachelor", r"licence", r"doctorat",
-        r"شهادة", r"دكتوراه", r"ليسانس",
+    : [
+        , r"mast[eè]re", r"bachelor", r"licence", r"doctorat",
+        , r"دكتوراه", r"ليسانس",
     ],
-    "affiliation_attestation": [
-        r"attestation", r"affiliation", r"CNAS", r"caisse\s+nationale",
-        r"شهادة\s+انتساب", r"الصندوق\s+الوطني",
+    : [
+        , r"affiliation", r"CNAS", r"caisse\s+nationale",
+        , r"الصندوق\s+الوطني",
     ],
-    "agreement": [
-        r"convention", r"contrat", r"accord", r"protocole",
-        r"اتفاقية", r"عقد",
+    : [
+        , r"contrat", r"accord", r"protocole",
+        , r"عقد",
     ],
-    "chifa": [
-        r"chifa", r"assurance\s+maladie", r"carte\s+de\s+soin",
-        r"شفاء", r"التأمين\s+الصحي",
+    : [
+        , r"assurance\s+maladie", r"carte\s+de\s+soin",
+        , r"التأمين\s+الصحي",
     ],
-    "ordonnance": [
-        r"ordonnance", r"prescription", r"m[ée]dicament",
-        r"وصفة\s+طبية",
+    : [
+        , r"prescription", r"m[ée]dicament",
+        ,
     ],
-    "birth_certificate": [
-        r"acte\s+de\s+naissance", r"naissance", r"né\s+le",
-        r"شهادة\s+الميلاد",
+    : [
+        , r"naissance", r"né\s+le",
+        ,
     ],
 }
 
@@ -86,21 +84,21 @@ def _keyword_match(text: str) -> Optional[tuple[str, float]]:
 
 
 class KeywordClassifierTool(BaseTool):
-    """Fast keyword-based classifier using OCR text."""
+    
 
     @property
     def name(self) -> str:
         return "keyword_classifier"
 
     async def execute(self, context: AgentContext, **kwargs) -> ToolResult:
-        # Prefer OCR text already in context; fall back to PaddleOCR quick pass
+        
         ocr_result = context.get_result("ocr")
         text = ""
         if ocr_result and ocr_result.output:
             text = ocr_result.output.get("text", "")
 
         if not text:
-            # Try a quick OCR pass ourselves
+            
             image_bytes = kwargs.get("image_bytes")
             if image_bytes:
                 try:
@@ -121,7 +119,7 @@ class KeywordClassifierTool(BaseTool):
             return ToolResult(
                 tool_name=self.name,
                 output={"doc_type": doc_type, "reasoning": f"keyword match score={score:.2f}"},
-                confidence=min(score * 2.0, 0.95),  # Scale up — keywords are reliable
+                confidence=min(score * 2.0, 0.95),  
                 processing_time_ms=0.0,
             )
 
@@ -130,9 +128,7 @@ class KeywordClassifierTool(BaseTool):
 
 
 class VisualSimilarityTool(BaseTool):
-    """
-    Compares image against template sample via ORB feature matching.
-    """
+    
 
     @property
     def name(self) -> str:

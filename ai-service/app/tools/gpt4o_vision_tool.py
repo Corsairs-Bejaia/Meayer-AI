@@ -26,10 +26,7 @@ def _bytes_to_data_url(image_bytes: bytes) -> str:
 
 
 class GPT4oVisionOCRTool(BaseTool):
-    """
-    GPT-4o Vision as last-resort OCR. Handles low quality, handwritten,
-    and complex mixed-language layouts. ~$0.01-0.03 per call.
-    """
+    
 
     @property
     def name(self) -> str:
@@ -59,14 +56,14 @@ class GPT4oVisionOCRTool(BaseTool):
                 max_tokens=2000,
                 messages=[
                     {
-                        "role": "user",
-                        "content": [
+                        : "user",
+                        : [
                             {
-                                "type": "text",
-                                "text": (
-                                    "Extract ALL text from this Algerian document. "
-                                    "Preserve the original layout and language (Arabic and/or French). "
-                                    "Return the raw text exactly as it appears, with line breaks preserved."
+                                : "text",
+                                : (
+                                    
+                                    
+                                    
                                 ),
                             },
                             {"type": "image_url", "image_url": {"url": data_url}},
@@ -76,7 +73,7 @@ class GPT4oVisionOCRTool(BaseTool):
             )
 
             extracted_text = response.choices[0].message.content or ""
-            # GPT-4o Vision OCR is assumed high confidence when it returns text
+            
             confidence = 0.95 if extracted_text.strip() else 0.1
 
             return ToolResult(
@@ -95,9 +92,7 @@ class GPT4oVisionOCRTool(BaseTool):
 
 
 class GPT4oClassifierTool(BaseTool):
-    """
-    GPT-4o Vision for document type classification.
-    """
+    
 
     @property
     def name(self) -> str:
@@ -129,16 +124,16 @@ class GPT4oClassifierTool(BaseTool):
                 response_format={"type": "json_object"},
                 messages=[
                     {
-                        "role": "user",
-                        "content": [
+                        : "user",
+                        : [
                             {
-                                "type": "text",
-                                "text": (
+                                : "text",
+                                : (
                                     f"Classify this Algerian administrative document. "
                                     f"Choose from: {template_list}. "
-                                    "Return JSON: {\"doc_type\": str, \"matched_template_slug\": str, "
-                                    "\"confidence\": float (0-1), \"language\": \"ar\"|\"fr\"|\"ar+fr\", "
-                                    "\"reasoning\": str}"
+                                    
+                                    
+                                    
                                 ),
                             },
                             {"type": "image_url", "image_url": {"url": data_url}},
@@ -166,9 +161,7 @@ class GPT4oClassifierTool(BaseTool):
 
 
 class GPT4oExtractorTool(BaseTool):
-    """
-    GPT-4o Vision for structured field extraction from a document.
-    """
+    
 
     @property
     def name(self) -> str:
@@ -182,7 +175,7 @@ class GPT4oExtractorTool(BaseTool):
         image_bytes: bytes = kwargs.get("image_bytes")
         doc_type: str = kwargs.get("doc_type", "document")
         fields: list = kwargs.get("fields", [])
-        missing_fields: list = kwargs.get("missing_fields")  # Re-extract specific fields
+        missing_fields: list = kwargs.get("missing_fields")  
 
         if not image_bytes:
             return ToolResult(tool_name=self.name, output=None, confidence=0.0,
@@ -204,15 +197,15 @@ class GPT4oExtractorTool(BaseTool):
                 response_format={"type": "json_object"},
                 messages=[
                     {
-                        "role": "user",
-                        "content": [
+                        : "user",
+                        : [
                             {
-                                "type": "text",
-                                "text": (
+                                : "text",
+                                : (
                                     f"Extract these fields from this {doc_type} document:\n"
                                     f"{field_descriptions}\n\n"
-                                    "For each field return: {\"field_name\": {\"value\": ..., \"confidence\": 0-1}}. "
-                                    "Return as JSON object. Use null for missing fields."
+                                    
+                                    
                                 ),
                             },
                             {"type": "image_url", "image_url": {"url": data_url}},
@@ -225,7 +218,7 @@ class GPT4oExtractorTool(BaseTool):
             content = response.choices[0].message.content or "{}"
             extracted = json.loads(content)
 
-            # Calculate average confidence
+            
             confidences = [
                 v.get("confidence", 0.9)
                 for v in extracted.values()

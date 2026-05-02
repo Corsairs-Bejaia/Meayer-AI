@@ -63,12 +63,12 @@ class AuthenticityAgent(BaseAgent):
             all_results.append(metadata_result)
 
         weights = {
-            "ela_analysis": 0.35,
-            "stamp_detector": 0.20,
-            "signature_detector": 0.20,
-            "photocopy_detector": 0.15,
-            "metadata_analyzer": 0.10,
-            "ai_generation_detector": 0.10,
+            : 0.35,
+            : 0.20,
+            : 0.20,
+            : 0.15,
+            : 0.10,
+            : 0.10,
         }
 
         weighted_sum = 0.0
@@ -80,10 +80,10 @@ class AuthenticityAgent(BaseAgent):
             weighted_sum += r.confidence * w
             total_weight += w
             checks_output.append({
-                "check": r.tool_name,
-                "passed": r.confidence >= 0.6,
-                "score": round(r.confidence * 100, 1),
-                "details": r.output,
+                : r.tool_name,
+                : r.confidence >= 0.6,
+                : round(r.confidence * 100, 1),
+                : r.output,
             })
 
         aggregate_confidence = weighted_sum / total_weight if total_weight > 0 else 0.5
@@ -96,9 +96,9 @@ class AuthenticityAgent(BaseAgent):
         result = ToolResult(
             tool_name="authenticity_aggregate",
             output={
-                "authenticity_score": authenticity_score,
-                "is_suspicious": is_suspicious,
-                "checks": checks_output,
+                : authenticity_score,
+                : is_suspicious,
+                : checks_output,
             },
             confidence=aggregate_confidence,
             processing_time_ms=0.0,

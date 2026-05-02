@@ -98,10 +98,10 @@ class AgentOrchestrator:
                 doc_type=doc_type,
             )
             return {
-                "doc_index": i,
-                "doc_type": doc_type,
-                "ocr": ocr_result.output,
-                "extraction": extraction_result.output,
+                : i,
+                : doc_type,
+                : ocr_result.output,
+                : extraction_result.output,
             }
 
         extraction_tasks = [

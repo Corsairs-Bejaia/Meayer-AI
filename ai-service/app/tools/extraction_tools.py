@@ -7,32 +7,30 @@ from app.tools.gpt4o_vision_tool import GPT4oExtractorTool
 
 logger = logging.getLogger(__name__)
 
-# Common Algerian document regex patterns
+
 FIELD_PATTERNS = {
-    "cnas_number": re.compile(r"\b(\d{2}/\d{7})\b"),
-    "date": re.compile(r"\b(\d{2}[/-]\d{2}[/-]\d{4}|\d{4}[/-]\d{2}[/-]\d{2})\b"),
-    "nin": re.compile(r"\b(\d{18})\b"),
-    "year": re.compile(r"\b(19[5-9]\d|20[0-3]\d)\b"),
-    "phone": re.compile(r"\b(0[5-7]\d{8})\b"),
+    : re.compile(r"\b(\d{2}/\d{7})\b"),
+    : re.compile(r"\b(\d{2}[/-]\d{2}[/-]\d{4}|\d{4}[/-]\d{2}[/-]\d{2})\b"),
+    : re.compile(r"\b(\d{18})\b"),
+    : re.compile(r"\b(19[5-9]\d|20[0-3]\d)\b"),
+    : re.compile(r"\b(0[5-7]\d{8})\b"),
 }
 
 
 def _normalize_date(raw: str) -> str:
-    """Convert DD/MM/YYYY or YYYY-MM-DD to ISO format."""
+    
     for sep in "/", "-":
         parts = raw.split(sep)
         if len(parts) == 3:
-            if len(parts[0]) == 4:  # YYYY-MM-DD
+            if len(parts[0]) == 4:  
                 return f"{parts[0]}-{parts[1].zfill(2)}-{parts[2].zfill(2)}"
-            else:  # DD/MM/YYYY
+            else:  
                 return f"{parts[2]}-{parts[1].zfill(2)}-{parts[0].zfill(2)}"
     return raw
 
 
 class RegexExtractorTool(BaseTool):
-    """
-    Applies regex patterns to OCR text to extract structured fields.
-    """
+    
 
     @property
     def name(self) -> str:
@@ -40,7 +38,7 @@ class RegexExtractorTool(BaseTool):
 
     async def execute(self, context: AgentContext, **kwargs) -> ToolResult:
         fields: List[Dict] = kwargs.get("fields", [])
-        # Get text from previous OCR result
+        
         ocr_result = context.get_result("ocr")
         text = ""
         if ocr_result and ocr_result.output:
@@ -57,7 +55,7 @@ class RegexExtractorTool(BaseTool):
             fname = field.get("field_name", "")
             val_regex = field.get("validation_regex")
 
-            # Try template's own regex first
+            
             if val_regex:
                 try:
                     m = re.search(val_regex, text, re.IGNORECASE)
@@ -68,7 +66,7 @@ class RegexExtractorTool(BaseTool):
                 except re.error:
                     pass
 
-            # Try built-in patterns by field name
+            
             for pattern_key, pattern in FIELD_PATTERNS.items():
                 if pattern_key in fname.lower():
                     m = pattern.search(text)
@@ -98,10 +96,7 @@ class RegexExtractorTool(BaseTool):
 
 
 class PositionalExtractorTool(BaseTool):
-    """
-    Extracts fields from image ROIs defined by position_hint coordinates.
-    Requires PaddleOCR to read each cropped region.
-    """
+    
 
     @property
     def name(self) -> str:
@@ -134,14 +129,14 @@ class PositionalExtractorTool(BaseTool):
 
         for field in positional_fields:
             fname = field["field_name"]
-            hint = field["position_hint"]  # {x, y, width, height} in relative 0-1 coords
+            hint = field["position_hint"]  
             try:
                 x1 = int(hint["x"] * w)
                 y1 = int(hint["y"] * h)
                 x2 = int((hint["x"] + hint["width"]) * w)
                 y2 = int((hint["y"] + hint["height"]) * h)
 
-                # Add small padding
+                
                 x1 = max(0, x1 - 5)
                 y1 = max(0, y1 - 5)
                 x2 = min(w, x2 + 5)

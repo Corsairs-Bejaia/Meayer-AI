@@ -20,11 +20,11 @@ _orchestrator = AgentOrchestrator()
 
 
 @router.post(
-    "",
+    ,
     summary="Run Full Agentic Pipeline",
     description=(
-        "Runs all 6 agents in sequence. Set `stream=true` to receive "
-        "Server-Sent Events with live progress updates."
+        
+        
     ),
 )
 async def run_pipeline(
@@ -42,7 +42,7 @@ async def run_pipeline(
     if request.required_docs:
         extra["required_docs"] = request.required_docs
 
-    # ── Non-streaming: return full JSON response ──
+    
     if not request.stream:
         context = await _orchestrator.run_pipeline(
             documents=docs,
@@ -51,13 +51,13 @@ async def run_pipeline(
         )
         elapsed = round((time.time() - start_time) * 1000, 1)
         return {
-            "verification_id": context.verification_id,
-            "results": {k: v.output for k, v in context.results.items()},
-            "trace": context.trace,
-            "processing_time_ms": elapsed,
+            : context.verification_id,
+            : {k: v.output for k, v in context.results.items()},
+            : context.trace,
+            : elapsed,
         }
 
-    # ── Streaming SSE response ──
+    
     async def event_stream() -> AsyncGenerator[str, None]:
         queue: asyncio.Queue = asyncio.Queue()
 
@@ -69,7 +69,7 @@ async def run_pipeline(
                 payload["result"] = result
             await queue.put(payload)
 
-        # Run pipeline in background
+        
         async def _run():
             try:
                 context = await _orchestrator.run_pipeline(
@@ -80,17 +80,17 @@ async def run_pipeline(
                 )
                 elapsed = round((time.time() - start_time) * 1000, 1)
                 await queue.put({
-                    "step": "complete",
-                    "status": "done",
-                    "verification_id": context.verification_id,
-                    "results": {k: v.output for k, v in context.results.items()},
-                    "processing_time_ms": elapsed,
+                    : "complete",
+                    : "done",
+                    : context.verification_id,
+                    : {k: v.output for k, v in context.results.items()},
+                    : elapsed,
                 })
             except Exception as e:
                 logger.error(f"Pipeline error: {e}")
                 await queue.put({"step": "error", "status": "failed", "error": str(e)})
             finally:
-                await queue.put(None)  # Sentinel
+                await queue.put(None)  
 
         task = asyncio.create_task(_run())
 
@@ -106,7 +106,7 @@ async def run_pipeline(
         event_stream(),
         media_type="text/event-stream",
         headers={
-            "Cache-Control": "no-cache",
-            "X-Accel-Buffering": "no",
+            : "no-cache",
+            : "no",
         },
     )

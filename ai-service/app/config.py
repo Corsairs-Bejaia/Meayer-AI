@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 
 class Settings(BaseSettings):
-    # API Configuration
+    
     INTERNAL_API_KEY: str = "shared-secret-with-nestjs-backend"
     OPENAI_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
@@ -10,14 +10,14 @@ class Settings(BaseSettings):
     SERVICE_NAME: str = "ai-service"
     VERSION: str = "0.1.0"
 
-    # Cloudflare R2 Storage Configuration
+    
     R2_ACCOUNT_ID: str = ""
     R2_ACCESS_KEY_ID: str = ""
     R2_SECRET_ACCESS_KEY: str = ""
     R2_BUCKET: str = ""
     R2_PUBLIC_URL: str = ""
 
-    # Agent Configuration
+    
     DEFAULT_CONFIDENCE_THRESHOLD: float = 0.7
     ENABLE_GPT4O_FALLBACK: bool = False
     ENABLE_GEMINI_FALLBACK: bool = True

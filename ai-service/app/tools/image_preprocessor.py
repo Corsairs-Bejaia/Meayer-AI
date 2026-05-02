@@ -8,16 +8,12 @@ from typing import Any, Dict
 logger = logging.getLogger(__name__)
 
 class ImagePreprocessor:
-    """
-    Utility for normalizing and enhancing document images before OCR/Analysis.
-    """
+    
     
     @staticmethod
     def preprocess(image_bytes: bytes, profile: str = "STANDARD") -> Dict[str, Any]:
-        """
-        Main entry point for image preprocessing.
-        """
-        # Load image
+        
+        
         nparr = np.frombuffer(image_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         
@@ -25,17 +21,17 @@ class ImagePreprocessor:
             raise ValueError("Could not decode image")
 
         metadata = {
-            "original_size": img.shape[:2],
-            "was_rotated": False,
-            "rotation_angle": 0.0,
-            "was_deskewed": False,
-            "deskew_angle": 0.0,
-            "quality_score": ImagePreprocessor.estimate_quality(img)
+            : img.shape[:2],
+            : False,
+            : 0.0,
+            : False,
+            : 0.0,
+            : ImagePreprocessor.estimate_quality(img)
         }
 
-        # Apply pipeline based on profile
+        
         if profile == "FAST":
-            # Just resize if too large
+            
             img = ImagePreprocessor.resize_to_target_dpi(img)
         elif profile == "STANDARD":
             img = ImagePreprocessor.rotate_if_needed(img, metadata)
@@ -52,35 +48,33 @@ class ImagePreprocessor:
 
         metadata["final_size"] = img.shape[:2]
         
-        # Convert back to bytes for tools that need bytes
+        
         _, buffer = cv2.imencode(".png", img)
         processed_bytes = buffer.tobytes()
 
         return {
-            "image": img,
-            "image_bytes": processed_bytes,
-            "metadata": metadata
+            : img,
+            : processed_bytes,
+            : metadata
         }
 
     @staticmethod
     def estimate_quality(img: cv2.Mat) -> float:
-        """
-        Estimates image quality score (0-100) based on blur and contrast.
-        """
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        # 1. Blur detection (Laplacian variance)
-        laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
-        blur_score = min(laplacian_var / 5.0, 50.0) # Cap at 50
         
-        # 2. Contrast detection
-        contrast_score = (gray.max() - gray.min()) / 255.0 * 50.0 # Cap at 50
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        
+        laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+        blur_score = min(laplacian_var / 5.0, 50.0) 
+        
+        
+        contrast_score = (gray.max() - gray.min()) / 255.0 * 50.0 
         
         return float(blur_score + contrast_score)
 
     @staticmethod
     def rotate_if_needed(img: cv2.Mat, metadata: dict) -> cv2.Mat:
-        # Simplification: rotation detection would normally use Tesseract OSD or deep learning
-        # For now, we'll skip it or implement a simple orientation check
+        
+        
         return img
 
     @staticmethod

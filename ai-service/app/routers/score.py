@@ -20,7 +20,7 @@ async def calculate_score(
     start = time.time()
     context = AgentContext()
 
-    # Inject provided results into context if given
+    
     if request.authenticity_results:
         from app.agents.base import ToolResult
         context.results["authenticity"] = ToolResult(

@@ -11,24 +11,24 @@ def parse_cnas_result(
     soup = BeautifulSoup(html_content, "lxml")
 
     result = {
-        "valid": False,
-        "status": "not_found",
-        "employer_name": None,
-        "attestation_status": None,
-        "employee_found": False,
-        "employee_name": None,
-        "error_message": None,
+        : False,
+        : "not_found",
+        : None,
+        : None,
+        : False,
+        : None,
+        : None,
     }
 
     if (
-        "Captcha Incorrect" in html_content
+         in html_content
         or "Code de sécurité incorrect" in html_content
     ):
         result["status"] = "captcha_failed"
         return result
 
     if (
-        "aucune attestation" in html_content.lower()
+         in html_content.lower()
         or "n'est pas valide" in html_content.lower()
     ):
         result["valid"] = False
@@ -59,7 +59,7 @@ def parse_cnas_result(
                         cells = row.find_all("td")
                         for i, cell in enumerate(cells):
                             if ssn_to_find in cell.get_text():
-                                # Usually name is in the next cell or same cell
+                                
                                 if len(cells) > i + 1:
                                     result["employee_name"] = (
                                         cells[i + 1].get_text().strip()

@@ -24,11 +24,11 @@ class AgentContext:
 
     def add_trace(self, agent_name: str, tool_name: str, confidence: float, note: str):
         self.trace.append({
-            "timestamp": time.time(),
-            "agent": agent_name,
-            "tool": tool_name,
-            "confidence": confidence,
-            "note": note
+            : time.time(),
+            : agent_name,
+            : tool_name,
+            : confidence,
+            : note
         })
 
 class BaseTool(ABC):

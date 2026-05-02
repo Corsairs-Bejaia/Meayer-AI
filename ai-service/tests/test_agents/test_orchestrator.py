@@ -4,20 +4,20 @@ from unittest.mock import AsyncMock, patch, MagicMock
 from app.agents.orchestrator import AgentOrchestrator
 from app.agents.base import AgentContext, ToolResult
 
-# --- Helpers ---
+
 def create_dummy_doc(index):
     return {
-        "file_url": f"http://example.com/doc{index}.jpg",
-        "doc_type_hint": "national_id" if index == 0 else "diploma"
+        : f"http://example.com/doc{index}.jpg",
+        : "national_id" if index == 0 else "diploma"
     }
 
-# --- Tests ---
+
 
 class TestAgentOrchestrator:
 
     @pytest.mark.asyncio
     async def test_full_pipeline_success(self):
-        """Verify the full 6-agent pipeline runs and aggregates results correctly."""
+        
         orchestrator = AgentOrchestrator()
         documents = [create_dummy_doc(0), create_dummy_doc(1)]
         templates = [
@@ -25,18 +25,12 @@ class TestAgentOrchestrator:
             {"slug": "dz-university-diploma-v1", "doc_type": "diploma", "fields": [{"field_name": "university"}]}
         ]
         
-        # Mock fetch_image
-        with patch("app.agents.orchestrator._fetch_image", new_callable=AsyncMock) as mock_fetch, \
-             patch.object(orchestrator.classifier, "run", new_callable=AsyncMock) as m_class, \
-             patch.object(orchestrator.ocr, "run", new_callable=AsyncMock) as m_ocr, \
-             patch.object(orchestrator.extraction, "run", new_callable=AsyncMock) as m_extr, \
-             patch.object(orchestrator.authenticity, "run", new_callable=AsyncMock) as m_auth, \
-             patch.object(orchestrator.consistency, "run", new_callable=AsyncMock) as m_cons, \
-             patch.object(orchestrator.scoring, "run", new_callable=AsyncMock) as m_score:
+        
+        with patch("app.agents.orchestrator._fetch_image", new_callable=AsyncMock) as mock_fetch,             patch.object(orchestrator.classifier, "run", new_callable=AsyncMock) as m_class,             patch.object(orchestrator.ocr, "run", new_callable=AsyncMock) as m_ocr,             patch.object(orchestrator.extraction, "run", new_callable=AsyncMock) as m_extr,             patch.object(orchestrator.authenticity, "run", new_callable=AsyncMock) as m_auth,             patch.object(orchestrator.consistency, "run", new_callable=AsyncMock) as m_cons,             patch.object(orchestrator.scoring, "run", new_callable=AsyncMock) as m_score:
             
             mock_fetch.return_value = b"fake_image_bytes"
             
-            # Setup returns
+            
             m_class.return_value = ToolResult("classifier", {"doc_type": "national_id"}, 0.9, 0.0)
             m_ocr.return_value = ToolResult("ocr", {"text": "some text"}, 0.9, 0.0)
             m_extr.return_value = ToolResult("extraction", {"extracted_fields": {"full_name": "John Doe"}}, 0.9, 0.0)
@@ -44,7 +38,7 @@ class TestAgentOrchestrator:
             m_cons.return_value = ToolResult("consistency", {"consistency_score": 100.0}, 1.0, 0.0)
             m_score.return_value = ToolResult("scoring", {"score": 95.0, "decision": "approved"}, 1.0, 0.0)
 
-            # Progress tracker
+            
             progress_updates = []
             async def progress_callback(step, status, result):
                 progress_updates.append((step, status))
@@ -60,7 +54,7 @@ class TestAgentOrchestrator:
             assert len(progress_updates) > 5
             assert progress_updates[-1][0] == "complete"
             
-            # Verify cross-document fields passed to consistency
+            
             m_cons.assert_called_once()
             call_kwargs = m_cons.call_args.kwargs
             assert "documents" in call_kwargs
@@ -68,21 +62,16 @@ class TestAgentOrchestrator:
 
     @pytest.mark.asyncio
     async def test_pipeline_with_fetch_error(self):
-        """Verify pipeline continues even if one document fails to fetch."""
+        
         orchestrator = AgentOrchestrator()
         documents = [create_dummy_doc(0), create_dummy_doc(1)]
         
         with patch("app.agents.orchestrator._fetch_image", new_callable=AsyncMock) as mock_fetch:
-            # First succeeds, second fails
+            
             mock_fetch.side_effect = [b"valid_bytes", Exception("Network error")]
             
-            # We don't need to mock everything else, just enough to see it doesn't crash
-            with patch.object(orchestrator.classifier, "run", new_callable=AsyncMock) as m_class, \
-                 patch.object(orchestrator.ocr, "run", new_callable=AsyncMock) as m_ocr, \
-                 patch.object(orchestrator.extraction, "run", new_callable=AsyncMock) as m_extr, \
-                 patch.object(orchestrator.authenticity, "run", new_callable=AsyncMock) as m_auth, \
-                 patch.object(orchestrator.consistency, "run", new_callable=AsyncMock) as m_cons, \
-                 patch.object(orchestrator.scoring, "run", new_callable=AsyncMock) as m_score:
+            
+            with patch.object(orchestrator.classifier, "run", new_callable=AsyncMock) as m_class,                 patch.object(orchestrator.ocr, "run", new_callable=AsyncMock) as m_ocr,                 patch.object(orchestrator.extraction, "run", new_callable=AsyncMock) as m_extr,                 patch.object(orchestrator.authenticity, "run", new_callable=AsyncMock) as m_auth,                 patch.object(orchestrator.consistency, "run", new_callable=AsyncMock) as m_cons,                 patch.object(orchestrator.scoring, "run", new_callable=AsyncMock) as m_score:
                 
                 m_class.return_value = ToolResult("classifier", {"doc_type": "unknown"}, 0.0, 0.0)
                 m_ocr.return_value = ToolResult("ocr", {"text": ""}, 0.0, 0.0)
@@ -94,20 +83,20 @@ class TestAgentOrchestrator:
                 context = await orchestrator.run_pipeline(documents=documents)
                 
                 assert context is not None
-                # Should have trace for one fetch error but continue
-                assert m_class.call_count == 2 # Still tries to classify both (though one has None bytes)
+                
+                assert m_class.call_count == 2 
 
     @pytest.mark.asyncio
     async def test_scoring_with_blockers(self):
-        """Verify scoring agent handles blockers (hard fails)."""
+        
         from app.agents.scoring_agent import ScoringAgent
         agent = ScoringAgent()
         ctx = AgentContext()
         
-        # Add a consistency result with a hard flag (blocker)
+        
         ctx.results["consistency"] = ToolResult("consistency", {
-            "consistency_score": 10.0,
-            "flags": [{"type": "hard", "message": "NIN mismatch"}]
+            : 10.0,
+            : [{"type": "hard", "message": "NIN mismatch"}]
         }, 1.0, 0.0)
         
         result = await agent.run(ctx, documents_submitted=["id"], required_docs=["id"])

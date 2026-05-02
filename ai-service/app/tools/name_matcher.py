@@ -18,16 +18,16 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 _TITLES = re.compile(
-    r"\b(dr|pr|m|mme|mlle|prof|docteur|docteure|monsieur|madame|السيد|السيدة)\b\.?",
+    ,
     re.IGNORECASE,
 )
 _ARABIC_SCRIPT = re.compile(r"[\u0600-\u06FF]")
 
-# Common Algerian name prefix variants
+
 _PREFIX_MAP = {
-    "ben": "ben", "bel": "bel", "bou": "bou",
-    "abd": "abd", "abde": "abd", "abdel": "abd",
-    "el": "el", "al": "el",
+    : "ben", "bel": "bel", "bou": "bou",
+    : "abd", "abde": "abd", "abdel": "abd",
+    : "el", "al": "el",
 }
 
 
@@ -39,7 +39,7 @@ def _normalize_french(name: str) -> str:
     name = re.sub(r"[^a-zA-Z\s'-]", " ", name)
     name = re.sub(r"[-_]", " ", name)
     name = name.lower()
-    # Normalize prefixes: "ben ali" -> "benali", "bou medienne" -> "boumedienne"
+    
     for prefix in ["ben", "bou", "bel", "abd", "el", "al"]:
         name = re.sub(rf"\b{prefix}\s+", prefix, name)
     name = re.sub(r"\s+", " ", name).strip()
@@ -64,7 +64,7 @@ def _is_arabic(text: str) -> bool:
 
 
 def _token_set_ratio(a: str, b: str) -> float:
-    """Token-set fuzzy match — handles word order differences."""
+    
     tokens_a = set(a.split())
     tokens_b = set(b.split())
     intersection = tokens_a & tokens_b
@@ -84,10 +84,7 @@ def _token_set_ratio(a: str, b: str) -> float:
 
 
 class NameMatcher:
-    """
-    Fuzzy name matching for Arabic ↔ French Algerian names.
-    Handles transliteration, diacritics, word-order swaps, and common prefix variants.
-    """
+    
 
     MATCH_THRESHOLD = 0.75
 
@@ -105,13 +102,13 @@ class NameMatcher:
         norm_a = NameMatcher.normalize(name_a)
         norm_b = NameMatcher.normalize(name_b)
 
-        # Direct comparison
+        
         direct = _token_set_ratio(norm_a, norm_b)
 
-        # If one is Arabic, also try comparing transliteration
+        
         cross = 0.0
         if _is_arabic(name_a) != _is_arabic(name_b):
-            # Try converting Arabic to a rough Latin equivalent
+            
             if _is_arabic(name_a) and _HAS_UNIDECODE:
                 lat_a = unidecode(norm_a)
                 cross = _token_set_ratio(lat_a, norm_b)

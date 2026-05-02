@@ -10,15 +10,15 @@ logger = logging.getLogger(__name__)
 
 @lru_cache(maxsize=1)
 def _get_paddle_ocr():
-    """Lazy-load PaddleOCR to avoid slow startup. Cached as singleton."""
+    
     try:
         from paddleocr import PaddleOCR
-        # Use multilingual model — handles Arabic + French + digits
+        
         ocr = PaddleOCR(
             use_angle_cls=True,
-            lang="arabic",       # Arabic model with Latin script support
+            lang="arabic",       
             show_log=False,
-            enable_mkldnn=False, # Disable for compatibility
+            enable_mkldnn=False, 
         )
         return ocr
     except ImportError:
@@ -27,12 +27,12 @@ def _get_paddle_ocr():
 
 
 def _run_ocr_sync(image_bytes: bytes) -> List[Any]:
-    """Synchronous OCR call — will be run in executor."""
+    
     import tempfile, os
     ocr = _get_paddle_ocr()
     if ocr is None:
         return []
-    # PaddleOCR needs a file path or numpy array
+    
     import numpy as np
     import cv2
     nparr = np.frombuffer(image_bytes, np.uint8)
@@ -42,10 +42,7 @@ def _run_ocr_sync(image_bytes: bytes) -> List[Any]:
 
 
 class PaddleOCRTool(BaseTool):
-    """
-    Fast multi-language OCR using PaddleOCR.
-    Best for: clean typed documents in Arabic/French.
-    """
+    
 
     @property
     def name(self) -> str:
@@ -65,7 +62,7 @@ class PaddleOCRTool(BaseTool):
         loop = asyncio.get_event_loop()
         raw_result = await loop.run_in_executor(None, _run_ocr_sync, image_bytes)
 
-        # Parse PaddleOCR output: [[[bbox, (text, confidence)], ...]]
+        
         lines = []
         full_text_parts = []
         confidences = []
@@ -85,10 +82,10 @@ class PaddleOCRTool(BaseTool):
         return ToolResult(
             tool_name=self.name,
             output={
-                "text": full_text,
-                "lines": lines,
-                "avg_confidence": avg_confidence,
-                "line_count": len(lines),
+                : full_text,
+                : lines,
+                : avg_confidence,
+                : len(lines),
             },
             confidence=avg_confidence,
             processing_time_ms=0.0,

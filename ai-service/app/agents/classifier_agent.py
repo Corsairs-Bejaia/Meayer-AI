@@ -9,10 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class ClassifierAgent(BaseAgent):
-    """
-    Classifies uploaded documents by type.
-    Tool order: Keywords (free, fast) → Visual Similarity (free) → Gemini Flash (accurate)
-    """
+    
 
     @property
     def name(self) -> str:

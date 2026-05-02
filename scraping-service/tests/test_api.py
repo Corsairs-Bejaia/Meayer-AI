@@ -12,34 +12,34 @@ def test_health_check():
 
 def test_verify_unauthorized():
     response = client.post(
-        "/api/cnas/verify",
+        ,
         headers={"x-internal-api-key": "wrong-key"},
         json={
-            "Numéro de l'attestation": "25/1234567",
-            "Numéro de l'employeur": "16/0001234"
+            : "25/1234567",
+            : "16/0001234"
         }
     )
     assert response.status_code == 401
     assert response.json()["detail"] == "Invalid or missing API Key"
 
 def test_verify_populate_by_name():
-    # This should work because of model_config = {"populate_by_name": True}
+    
     response = client.post(
-        "/api/cnas/verify",
+        ,
         headers={"x-internal-api-key": settings.INTERNAL_API_KEY},
         json={
-            "attestation_number": "25/1234567",
-            "employer_number": "16/0001234"
+            : "25/1234567",
+            : "16/0001234"
         }
     )
-    # It might return 200 or something else depending on scraper mock, 
-    # but it shouldn't be 422
+    
+    
     assert response.status_code != 422
 
 def test_verify_invalid_input():
     response = client.post(
-        "/api/cnas/verify",
+        ,
         headers={"x-internal-api-key": settings.INTERNAL_API_KEY},
         json={"attestation_number": "invalid", "employer_number": "16/0001234"}
     )
-    assert response.status_code == 422 # Pydantic validation error
+    assert response.status_code == 422 

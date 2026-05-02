@@ -12,7 +12,7 @@ class TemplateService:
 
     @classmethod
     def load_templates(cls):
-        """Loads templates from JSON file into memory."""
+        
         try:
             if not os.path.exists(cls._data_path):
                 logger.warning(f"Template file not found at {cls._data_path}")
@@ -40,5 +40,5 @@ class TemplateService:
     def list_all(cls) -> List[Template]:
         return list(cls._templates.values())
 
-# Initialize on module load
+
 TemplateService.load_templates()

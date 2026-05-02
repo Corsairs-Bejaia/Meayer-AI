@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 def _tesseract_sync(image_bytes: bytes) -> Dict[str, Any]:
-    """Synchronous Tesseract call — run in executor."""
+    
     img = Image.open(io.BytesIO(image_bytes))
-    # Get per-word confidence via image_to_data
+    
     data = pytesseract.image_to_data(
         img,
         lang="fra+ara",
@@ -30,7 +30,7 @@ def _tesseract_sync(image_bytes: bytes) -> Dict[str, Any]:
         if not word:
             continue
         conf = int(data["conf"][i])
-        if conf < 0:  # -1 means no confidence available
+        if conf < 0:  
             continue
         words.append({"text": word, "confidence": conf / 100.0})
         full_text_parts.append(word)
@@ -40,18 +40,15 @@ def _tesseract_sync(image_bytes: bytes) -> Dict[str, Any]:
     avg_confidence = sum(confidences) / len(confidences) if confidences else 0.0
 
     return {
-        "text": full_text,
-        "words": words,
-        "avg_confidence": avg_confidence,
-        "word_count": len(words),
+        : full_text,
+        : words,
+        : avg_confidence,
+        : len(words),
     }
 
 
 class TesseractTool(BaseTool):
-    """
-    OCR using Tesseract with French + Arabic language models.
-    Best for: unusual fonts that PaddleOCR struggles with.
-    """
+    
 
     @property
     def name(self) -> str:

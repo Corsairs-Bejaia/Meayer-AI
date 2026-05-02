@@ -25,10 +25,7 @@ def _detect_language(text: str) -> str:
 
 
 class OCRAgent(BaseAgent):
-    """
-    Multi-engine OCR with adaptive preprocessing and self-correction.
-    Tool order: PaddleOCR → Tesseract → GPT-4o Vision (last resort)
-    """
+    
 
     @property
     def name(self) -> str:
@@ -47,16 +44,16 @@ class OCRAgent(BaseAgent):
             return ToolResult(tool_name="ocr", output=None, confidence=0.0,
                               processing_time_ms=0.0, error="No image_bytes provided")
 
-        # Preprocess and estimate quality
+        
         try:
             preprocessed = ImagePreprocessor.preprocess(image_bytes, profile="FAST")
             quality_score = preprocessed["metadata"]["quality_score"]
         except Exception as e:
             logger.warning(f"Image preprocessing failed: {e}, using raw bytes")
-            quality_score = 50.0  # Assume medium quality
+            quality_score = 50.0  
             preprocessed = {"image_bytes": image_bytes, "metadata": {}}
 
-        # Choose preprocessing profile based on quality
+        
         if quality_score > 70:
             profile = "FAST"
         elif quality_score > 40:
@@ -64,7 +61,7 @@ class OCRAgent(BaseAgent):
         else:
             profile = "AGGRESSIVE"
 
-        # Re-preprocess with the correct profile if needed
+        
         if profile != "FAST":
             try:
                 preprocessed = ImagePreprocessor.preprocess(image_bytes, profile=profile)
@@ -77,7 +74,7 @@ class OCRAgent(BaseAgent):
         best_result: Optional[ToolResult] = None
         tools_to_try: List[BaseTool] = list(self.tools)
 
-        # If very low quality, start directly with GPT-4o
+        
         if quality_score < 30:
             tools_to_try = [GeminiOCRTool()]
 
@@ -88,7 +85,7 @@ class OCRAgent(BaseAgent):
                                   f"quality={quality_score:.0f}, profile={profile}")
 
                 if result.confidence >= self.confidence_threshold:
-                    # Enrich output with language detection
+                    
                     text = (result.output or {}).get("text", "")
                     result.output["language"] = _detect_language(text)
                     context.results[self.name] = result

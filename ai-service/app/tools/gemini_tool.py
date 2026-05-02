@@ -8,9 +8,7 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 class GeminiVisionTool(BaseTool):
-    """
-    General purpose Vision tool using Gemini 2.0 Flash.
-    """
+    
 
     @property
     def name(self) -> str:
@@ -53,29 +51,25 @@ class GeminiVisionTool(BaseTool):
                               processing_time_ms=0.0, error=str(e))
 
 class GeminiOCRTool(GeminiVisionTool):
-    """
-    OCR using Gemini Flash.
-    """
+    
     async def execute(self, context: AgentContext, **kwargs) -> ToolResult:
         prompt = (
-            "Perform high-accuracy OCR on this document. "
-            "Return the full text. Preserve layout as much as possible. "
-            "Handle both Arabic and French text."
+            
+            
+            
         )
         kwargs["prompt"] = prompt
         result = await super().execute(context, **kwargs)
         return result
 
 class GeminiExtractorTool(GeminiVisionTool):
-    """
-    Structured data extraction using Gemini Flash.
-    """
+    
     async def execute(self, context: AgentContext, **kwargs) -> ToolResult:
         doc_type = kwargs.get("doc_type", "document")
         fields = kwargs.get("fields", [])
         missing = kwargs.get("missing_fields", fields)
         
-        # Robustly handle both dicts and objects for fields
+        
         field_names = []
         for f in missing:
             if isinstance(f, dict):
@@ -90,9 +84,9 @@ class GeminiExtractorTool(GeminiVisionTool):
         
         prompt = (
             f"You are a data extraction expert for Algerian documents. Type: {doc_type}. "
-            "Extract the following fields from the image. "
-            "Return ONLY a JSON object where keys are field names and values are strings. "
-            "If a field is not found, return null for its value. "
+            
+            
+            
             f"Fields to extract:\n{field_descriptions}"
         )
         kwargs["prompt"] = prompt

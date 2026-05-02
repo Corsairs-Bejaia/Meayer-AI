@@ -11,7 +11,7 @@ class StorageService:
 
     async def upload_file(self, file_content: bytes, object_name: str, content_type: str = "image/png") -> str:
         async with self.session.client(
-            "s3",
+            ,
             endpoint_url=self.endpoint_url,
             aws_access_key_id=settings.R2_ACCESS_KEY_ID,
             aws_secret_access_key=settings.R2_SECRET_ACCESS_KEY,

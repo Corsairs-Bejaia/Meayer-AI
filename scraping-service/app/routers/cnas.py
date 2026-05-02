@@ -15,7 +15,7 @@ router = APIRouter(
 
 
 @router.post(
-    "/verify",
+    ,
     response_model=CNASVerifyResponse,
     summary="Verify Employer Attestation",
     description="Verifies the validity of a CNAS employer affiliation attestation using the certificate number and employer ID.",
@@ -43,11 +43,11 @@ async def verify_cnas(request: CNASVerifyRequest):
     except Exception as e:
         logger.error(f"Unexpected error in verify_cnas: {e}")
         return {
-            "valid": None,
-            "status": "error",
-            "error": str(e),
-            "attempts": 0,
-            "processing_time_ms": 0,
+            : None,
+            : "error",
+            : str(e),
+            : 0,
+            : 0,
         }
 
 

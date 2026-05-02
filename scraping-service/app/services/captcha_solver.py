@@ -20,7 +20,7 @@ async def solve_captcha(image_bytes: bytes) -> str:
             for threshold in thresholds:
                 img = original_img.convert("L")
 
-                # Enhance contrast before thresholding
+                
                 enhancer = ImageEnhance.Contrast(img)
                 img = enhancer.enhance(2.0)
 
@@ -63,7 +63,7 @@ async def solve_captcha_gemini(image_bytes: bytes) -> str:
         response = client.models.generate_content(
             model="gemini-2.0-flash",
             contents=[
-                "Extract the 5-6 characters code from this CAPTCHA image. Return only the code.",
+                ,
                 image_bytes,
             ],
         )

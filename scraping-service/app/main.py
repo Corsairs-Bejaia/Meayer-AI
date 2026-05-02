@@ -38,13 +38,13 @@ app = FastAPI(
     """,
     version=settings.VERSION,
     contact={
-        "name": "Corsairs Bejaia",
-        "url": "https://github.com/Corsairs-Bejaia",
+        : "Corsairs Bejaia",
+        : "https://github.com/Corsairs-Bejaia",
     },
     openapi_tags=[
         {
-            "name": "cnas",
-            "description": "National Social Security Fund (CNAS) automation endpoints.",
+            : "cnas",
+            : "National Social Security Fund (CNAS) automation endpoints.",
         },
     ],
     lifespan=lifespan,
@@ -66,10 +66,10 @@ async def health_check():
         pass
 
     return {
-        "status": "ok",
-        "service": settings.SERVICE_NAME,
-        "version": settings.VERSION,
-        "external": {"cnas": external_cnas},
+        : "ok",
+        : settings.SERVICE_NAME,
+        : settings.VERSION,
+        : {"cnas": external_cnas},
     }
 
 

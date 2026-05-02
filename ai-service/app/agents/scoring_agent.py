@@ -16,10 +16,10 @@ class ScoringAgent(BaseAgent):
         return []
 
     TIER_WEIGHTS = {
-        "identity": 0.30,
-        "employment": 0.25,
-        "credentials": 0.25,
-        "document_integrity": 0.20,
+        : 0.30,
+        : 0.25,
+        : 0.25,
+        : 0.20,
     }
 
     async def run(self, context: AgentContext, **kwargs) -> ToolResult:
@@ -56,9 +56,9 @@ class ScoringAgent(BaseAgent):
         else:
             kyc_score = 50.0
         tier_scores["identity"] = {
-            "score": round(kyc_score, 1),
-            "weight": self.TIER_WEIGHTS["identity"],
-            "details": kyc_result or "KYC not provided",
+            : round(kyc_score, 1),
+            : self.TIER_WEIGHTS["identity"],
+            : kyc_result or "KYC not provided",
         }
 
         employment_score = 0.0
@@ -71,9 +71,9 @@ class ScoringAgent(BaseAgent):
             employment_score = 50.0
             flags.append({"type": "info", "message": "CNAS not verified"})
         tier_scores["employment"] = {
-            "score": round(employment_score, 1),
-            "weight": self.TIER_WEIGHTS["employment"],
-            "details": cnas_result or "CNAS not provided",
+            : round(employment_score, 1),
+            : self.TIER_WEIGHTS["employment"],
+            : cnas_result or "CNAS not provided",
         }
 
         credential_score = 50.0
@@ -84,9 +84,9 @@ class ScoringAgent(BaseAgent):
             )
             credential_score = extraction_result.confidence * 100 if has_diploma_info else 50.0
         tier_scores["credentials"] = {
-            "score": round(credential_score, 1),
-            "weight": self.TIER_WEIGHTS["credentials"],
-            "details": "Based on extraction confidence",
+            : round(credential_score, 1),
+            : self.TIER_WEIGHTS["credentials"],
+            : "Based on extraction confidence",
         }
 
         integrity_score = 50.0
@@ -104,9 +104,9 @@ class ScoringAgent(BaseAgent):
             elif integrity_score < 50:
                 flags.append({"type": "soft", "message": f"Document authenticity score low: {integrity_score}"})
         tier_scores["document_integrity"] = {
-            "score": round(integrity_score, 1),
-            "weight": self.TIER_WEIGHTS["document_integrity"],
-            "details": authenticity_result.output if authenticity_result else "Not checked",
+            : round(integrity_score, 1),
+            : self.TIER_WEIGHTS["document_integrity"],
+            : authenticity_result.output if authenticity_result else "Not checked",
         }
 
         if consistency_result and consistency_result.output:
@@ -128,21 +128,21 @@ class ScoringAgent(BaseAgent):
             final_score = min(100.0, final_score + len(optional_submitted) * 5)
 
         coverage = {
-            "submitted": len(documents_submitted),
-            "required_total": len(required_docs),
-            "required_missing": [d for d in required_docs if d not in documents_submitted],
-            "optional_submitted": [d for d in documents_submitted if d not in required_docs],
+            : len(documents_submitted),
+            : len(required_docs),
+            : [d for d in required_docs if d not in documents_submitted],
+            : [d for d in documents_submitted if d not in required_docs],
         }
 
         result = ToolResult(
             tool_name="tiered_scoring",
             output={
-                "score": round(final_score, 1),
-                "tier_scores": tier_scores,
-                "blockers": blockers,
-                "flags": flags,
-                "documents_coverage": coverage,
-                "decision": "rejected" if blockers else ("review" if flags else "approved"),
+                : round(final_score, 1),
+                : tier_scores,
+                : blockers,
+                : flags,
+                : coverage,
+                : "rejected" if blockers else ("review" if flags else "approved"),
             },
             confidence=1.0,
             processing_time_ms=0.0,

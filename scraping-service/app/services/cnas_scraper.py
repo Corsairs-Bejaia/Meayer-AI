@@ -24,11 +24,11 @@ async def scrape_cnas(
 
     if not await cnas_rate_limiter.acquire():
         return {
-            "valid": None,
-            "status": "rate_limited",
-            "error": "Rate limit exceeded",
-            "attempts": 0,
-            "processing_time_ms": int((time.monotonic() - start_time) * 1000),
+            : None,
+            : "rate_limited",
+            : "Rate limit exceeded",
+            : 0,
+            : int((time.monotonic() - start_time) * 1000),
         }
 
     context = await browser_pool.acquire_context()
@@ -48,7 +48,7 @@ async def scrape_cnas(
                 )
 
                 captcha_img = await page.wait_for_selector(
-                    'img[src*="simpleCaptcha.png"]', timeout=5000
+                    , timeout=5000
                 )
                 if not captcha_img:
                     raise Exception("CAPTCHA image not found")
@@ -82,11 +82,11 @@ async def scrape_cnas(
                 processing_time_ms = int((time.monotonic() - start_time) * 1000)
                 return {
                     **result,
-                    "raw_response": html_content
+                    : html_content
                     if settings.LOG_LEVEL == "debug"
                     else None,
-                    "attempts": attempts,
-                    "processing_time_ms": processing_time_ms,
+                    : attempts,
+                    : processing_time_ms,
                 }
 
             except Exception as e:
@@ -96,22 +96,22 @@ async def scrape_cnas(
                 await asyncio.sleep(2)
 
         return {
-            "valid": None,
-            "status": "error",
-            "error": "Max attempts reached",
-            "attempts": attempts,
-            "processing_time_ms": int((time.monotonic() - start_time) * 1000),
+            : None,
+            : "error",
+            : "Max attempts reached",
+            : attempts,
+            : int((time.monotonic() - start_time) * 1000),
         }
 
     except Exception as e:
         screenshot_path = await capture_failure_screenshot(page, "cnas_error")
         return {
-            "valid": None,
-            "status": "error",
-            "error": str(e),
-            "attempts": attempts,
-            "processing_time_ms": int((time.monotonic() - start_time) * 1000),
-            "screenshot_url": screenshot_path,
+            : None,
+            : "error",
+            : str(e),
+            : attempts,
+            : int((time.monotonic() - start_time) * 1000),
+            : screenshot_path,
         }
     finally:
         await page.close()

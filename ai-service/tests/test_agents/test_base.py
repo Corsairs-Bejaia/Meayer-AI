@@ -58,7 +58,7 @@ class TestAgentContext:
         assert ctx.documents == []
         assert ctx.results == {}
         assert ctx.trace == []
-        assert ctx.verification_id  # non-empty UUID
+        assert ctx.verification_id  
 
     def test_add_trace(self):
         ctx = AgentContext()
@@ -81,10 +81,10 @@ class TestAgentContext:
 class TestBaseAgent:
     @pytest.mark.asyncio
     async def test_stops_at_threshold(self):
-        """Agent should stop and return as soon as a tool meets the threshold."""
+        
         tools = [
-            MockTool("fast_tool", confidence=0.9),   # above threshold
-            MockTool("slow_tool", confidence=0.95),  # should never run
+            MockTool("fast_tool", confidence=0.9),   
+            MockTool("slow_tool", confidence=0.95),  
         ]
         agent = MockAgent(tools, threshold=0.7)
         ctx = AgentContext()
@@ -92,13 +92,13 @@ class TestBaseAgent:
 
         assert result.tool_name == "fast_tool"
         assert result.confidence == 0.9
-        # Only one trace entry — slow_tool was never called
+        
         assert len(ctx.trace) == 1
         assert ctx.trace[0]["tool"] == "fast_tool"
 
     @pytest.mark.asyncio
     async def test_falls_back_to_next_tool(self):
-        """When first tool is below threshold, agent should try next."""
+        
         tools = [
             MockTool("weak_tool", confidence=0.4),
             MockTool("strong_tool", confidence=0.85),
@@ -112,7 +112,7 @@ class TestBaseAgent:
 
     @pytest.mark.asyncio
     async def test_returns_best_when_no_tool_meets_threshold(self):
-        """Returns the highest-confidence result even if below threshold."""
+        
         tools = [
             MockTool("tool_a", confidence=0.3),
             MockTool("tool_b", confidence=0.5),
@@ -127,7 +127,7 @@ class TestBaseAgent:
 
     @pytest.mark.asyncio
     async def test_handles_tool_exceptions_gracefully(self):
-        """A failing tool should be traced as error and agent tries the next."""
+        
         tools = [
             MockTool("crash_tool", confidence=0.0, error="Connection refused"),
             MockTool("backup_tool", confidence=0.8),
@@ -141,7 +141,7 @@ class TestBaseAgent:
 
     @pytest.mark.asyncio
     async def test_result_stored_in_context(self):
-        """Winning result must be written to context.results."""
+        
         tools = [MockTool("winner", confidence=0.9)]
         agent = MockAgent(tools, threshold=0.7)
         ctx = AgentContext()

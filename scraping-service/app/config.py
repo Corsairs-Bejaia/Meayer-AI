@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     BROWSER_TIMEOUT_MS: int = 30000
     PAGE_LOAD_TIMEOUT_MS: int = 30000
     
-    # Cloudflare R2 Storage Configuration
+    
     R2_ACCOUNT_ID: str = ""
     R2_ACCESS_KEY_ID: str = ""
     R2_SECRET_ACCESS_KEY: str = ""

@@ -9,7 +9,7 @@ class PaddleOCRTool(BaseTool):
         return "paddle_ocr"
 
     async def execute(self, context: AgentContext, **kwargs) -> ToolResult:
-        # Placeholder for PaddleOCR
+        
         return ToolResult(
             tool_name=self.name,
             output={"text": "Extracted text from PaddleOCR"},

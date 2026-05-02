@@ -8,7 +8,7 @@ class TemplateField(BaseModel):
     is_required: bool = False
     description: Optional[str] = None
     validation_regex: Optional[str] = None
-    position_hint: Optional[Dict[str, float]] = None  # {x, y, width, height} in 0-1 coords
+    position_hint: Optional[Dict[str, float]] = None  
 
 
 class Template(BaseModel):
@@ -101,11 +101,11 @@ class AuthenticityResponse(BaseModel):
 
 
 class ConsistencyRequest(BaseModel):
-    documents: Dict[str, Dict[str, Any]]  # doc_type → {field_name: value}
+    documents: Dict[str, Dict[str, Any]]  
 
 
 class ConsistencyFlag(BaseModel):
-    type: str  # "hard", "soft", "info"
+    type: str  
     check: str
     message: str
 

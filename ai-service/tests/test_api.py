@@ -32,16 +32,16 @@ class TestHealth:
 class TestAuthMiddleware:
     @pytest.mark.asyncio
     async def test_missing_key_returns_422(self, client):
-        # No header at all → FastAPI will return 422 (missing required header)
+        
         r = await client.post("/api/classify", json={
-            "file_url": "http://example.com/doc.jpg"
+            : "http://example.com/doc.jpg"
         })
         assert r.status_code in (401, 422)
 
     @pytest.mark.asyncio
     async def test_wrong_key_returns_401(self, client):
         r = await client.post(
-            "/api/classify",
+            ,
             json={"file_url": "http://example.com/doc.jpg"},
             headers={"X-Internal-API-Key": "wrong-key"},
         )
@@ -52,11 +52,11 @@ class TestConsistencyEndpoint:
     @pytest.mark.asyncio
     async def test_consistency_identical_names(self, client):
         r = await client.post(
-            "/api/consistency",
+            ,
             json={
-                "documents": {
-                    "national_id": {"name": {"value": "Ahmed Benali", "confidence": 0.9}},
-                    "affiliation": {"name": {"value": "Ahmed Benali", "confidence": 0.9}},
+                : {
+                    : {"name": {"value": "Ahmed Benali", "confidence": 0.9}},
+                    : {"name": {"value": "Ahmed Benali", "confidence": 0.9}},
                 }
             },
             headers=HEADERS,
@@ -69,7 +69,7 @@ class TestConsistencyEndpoint:
     @pytest.mark.asyncio
     async def test_consistency_empty_documents(self, client):
         r = await client.post(
-            "/api/consistency",
+            ,
             json={"documents": {}},
             headers=HEADERS,
         )
@@ -80,10 +80,10 @@ class TestScoreEndpoint:
     @pytest.mark.asyncio
     async def test_score_no_kyc(self, client):
         r = await client.post(
-            "/api/score",
+            ,
             json={
-                "documents_submitted": ["affiliation_attestation"],
-                "required_docs": [],
+                : ["affiliation_attestation"],
+                : [],
             },
             headers=HEADERS,
         )
@@ -95,21 +95,21 @@ class TestScoreEndpoint:
     @pytest.mark.asyncio
     async def test_score_with_full_input(self, client):
         r = await client.post(
-            "/api/score",
+            ,
             json={
-                "kyc_result": {"passed": True, "liveness_score": 0.95},
-                "cnas_result": {"valid": True},
-                "documents_submitted": ["affiliation_attestation", "national_id"],
-                "required_docs": ["affiliation_attestation"],
-                "authenticity_results": {
-                    "authenticity_score": 88.0,
-                    "is_suspicious": False,
-                    "checks": [],
+                : {"passed": True, "liveness_score": 0.95},
+                : {"valid": True},
+                : ["affiliation_attestation", "national_id"],
+                : ["affiliation_attestation"],
+                : {
+                    : 88.0,
+                    : False,
+                    : [],
                 },
-                "consistency_result": {
-                    "consistency_score": 92.0,
-                    "flags": [],
-                    "checks": [],
+                : {
+                    : 92.0,
+                    : [],
+                    : [],
                 },
             },
             headers=HEADERS,

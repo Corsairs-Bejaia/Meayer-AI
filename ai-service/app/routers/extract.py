@@ -34,13 +34,13 @@ async def extract_fields(
 
     fields = [f.model_dump() for f in request.template.fields]
 
-    # Run OCR first to build context
+    
     await _ocr_agent.run(context, image_bytes=image_bytes)
     ocr_result = context.get_result("ocr")
     raw_text = (ocr_result.output or {}).get("text") if ocr_result else None
     lang = (ocr_result.output or {}).get("language") if ocr_result else None
 
-    # Run extraction
+    
     result = await _extract_agent.run(
         context,
         image_bytes=image_bytes,

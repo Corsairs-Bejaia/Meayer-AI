@@ -16,17 +16,18 @@ class Settings(BaseSettings):
     BROWSER_POOL_SIZE: int = 2
     BROWSER_HEADLESS: bool = True
     BROWSER_TIMEOUT_MS: int = 30000
-    PAGE_LOAD_TIMEOUT_MS: int = 15000
+    PAGE_LOAD_TIMEOUT_MS: int = 30000
 
     CACHE_ENABLED: bool = True
     CACHE_TTL_SECONDS: int = 86400
 
     CAPTCHA_FALLBACK_2CAPTCHA: bool = False
     TWO_CAPTCHA_API_KEY: Optional[str] = None
+    GEMINI_API_KEY: Optional[str] = None
 
-    CNAS_FORM_ATTESTATION_SELECTOR: str = "input[name=\"numAttestation\"]"
-    CNAS_FORM_EMPLOYER_SELECTOR: str = "input[name=\"numEmployeur\"]"
-    CNAS_FORM_CAPTCHA_SELECTOR: str = "input[name=\"captcha\"]"
+    CNAS_FORM_ATTESTATION_SELECTOR: str = "input[name=\"numAttest\"]"
+    CNAS_FORM_EMPLOYER_SELECTOR: str = "input[name=\"numCot\"]"
+    CNAS_FORM_CAPTCHA_SELECTOR: str = "input[name=\"captchaValue\"]"
     CNAS_SUBMIT_SELECTOR: str = "input[type=\"submit\"]"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

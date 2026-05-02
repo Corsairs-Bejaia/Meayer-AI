@@ -12,7 +12,7 @@ router = APIRouter(
     dependencies=[Depends(verify_api_key)]
 )
 
-@router.post("/verify", response_model=CNASVerifyResponse)
+@router.post("/verify", response_model=CNASVerifyResponse, summary="Verify Employer Attestation", description="Verifies the validity of a CNAS employer affiliation attestation using the certificate number and employer ID.")
 async def verify_cnas(request: CNASVerifyRequest):
     logger.info(f"Received CNAS verification request for attestation {request.attestation_number}")
     
@@ -40,9 +40,8 @@ async def verify_cnas(request: CNASVerifyRequest):
             "attempts": 0,
             "processing_time_ms": 0
         }
-    }
 
-@router.post("/verify-employee", response_model=CNASEmployeeVerifyResponse)
+@router.post("/verify-employee", response_model=CNASEmployeeVerifyResponse, summary="Verify Individual Employee", description="Verifies if an individual employee (by SSN) is registered under a specific employer and attestation.")
 async def verify_cnas_employee(request: CNASEmployeeVerifyRequest):
     logger.info(f"Received CNAS employee verification request for SSN {request.ssn} in attestation {request.attestation_number}")
     

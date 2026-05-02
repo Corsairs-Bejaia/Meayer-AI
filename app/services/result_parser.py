@@ -47,7 +47,6 @@ def parse_cnas_result(html_content: str, ssn_to_find: Optional[str] = None) -> D
                 if ssn_to_find:
                     if ssn_to_find in text:
                         result["employee_found"] = True
-                        # Try to find the name in the same row or next cell
                         cells = row.find_all('td')
                         for i, cell in enumerate(cells):
                             if ssn_to_find in cell.get_text():

@@ -1,11 +1,14 @@
 import logging
 import sys
+import httpx
+import time
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
 from pythonjsonlogger import jsonlogger
 
 from app.config import settings
 from app.dependencies import verify_api_key
+from app.routers import cnas, stubs
 
 logger = logging.getLogger()
 logHandler = logging.StreamHandler(sys.stdout)
@@ -23,7 +26,29 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.SERVICE_NAME,
+    description="""
+    A high-performance scraping service for government website verification.
+    
+    ### Features:
+    * **CNAS Verification**: Employer and employee status checks.
+    * **Automated OCR**: Built-in CAPTCHA solving via Tesseract and Gemini.
+    * **Browser Pool**: Efficient Playwright context management.
+    """,
     version=settings.VERSION,
+    contact={
+        "name": "Corsairs Bejaia",
+        "url": "https://github.com/Corsairs-Bejaia",
+    },
+    openapi_tags=[
+        {
+            "name": "cnas",
+            "description": "National Social Security Fund (CNAS) automation endpoints.",
+        },
+        {
+            "name": "stubs",
+            "description": "Endpoints planned for future implementation.",
+        }
+    ],
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -31,9 +56,6 @@ app = FastAPI(
 
 @app.get("/api/health")
 async def health_check():
-    import httpx
-    import time
-    
     external_cnas = {"reachable": False, "response_time_ms": 0}
     try:
         start = time.monotonic()
@@ -52,8 +74,6 @@ async def health_check():
             "cnas": external_cnas
         }
     }
-
-from app.routers import cnas, stubs
 
 app.include_router(cnas.router, prefix="/api")
 app.include_router(stubs.router)

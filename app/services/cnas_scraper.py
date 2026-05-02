@@ -3,6 +3,7 @@ import logging
 import time
 import os
 from datetime import datetime
+from typing import Optional
 from playwright.async_api import BrowserContext, Page
 from app.config import settings
 from app.services.browser_pool import browser_pool

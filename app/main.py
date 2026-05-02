@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from pythonjsonlogger import json
 
 from app.config import settings
-from app.routers import cnas, stubs
+from app.routers import cnas
 
 logger = logging.getLogger()
 logHandler = logging.StreamHandler(sys.stdout)
@@ -46,10 +46,6 @@ app = FastAPI(
             "name": "cnas",
             "description": "National Social Security Fund (CNAS) automation endpoints.",
         },
-        {
-            "name": "stubs",
-            "description": "Endpoints planned for future implementation.",
-        },
     ],
     lifespan=lifespan,
     docs_url="/docs",
@@ -78,4 +74,3 @@ async def health_check():
 
 
 app.include_router(cnas.router, prefix="/api")
-app.include_router(stubs.router)

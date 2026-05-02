@@ -1,7 +1,7 @@
 import logging
 import re
 import httpx
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from app.agents.base import BaseAgent, BaseTool, ToolResult, AgentContext
 from app.tools.gemini_tool import GeminiVisionTool
@@ -14,7 +14,16 @@ class GeminiClassifierTool(GeminiVisionTool):
     """
     async def execute(self, context: AgentContext, **kwargs) -> ToolResult:
         templates = kwargs.get("available_templates", [])
-        template_list = ", ".join([f"'{t.slug}'" for t in templates])
+        
+        # Robustly handle both dicts and objects
+        slugs = []
+        for t in templates:
+            if isinstance(t, dict):
+                slugs.append(t.get("slug"))
+            else:
+                slugs.append(getattr(t, "slug", "unknown"))
+        
+        template_list = ", ".join([f"'{s}'" for s in slugs if s])
         
         prompt = (
             "You are a professional Algerian document classifier. "
@@ -123,7 +132,6 @@ class KeywordClassifierTool(BaseTool):
 class VisualSimilarityTool(BaseTool):
     """
     Compares image against template sample via ORB feature matching.
-    Best for: forms with a fixed visual layout.
     """
 
     @property
@@ -156,7 +164,13 @@ class VisualSimilarityTool(BaseTool):
         best_template = "unknown"
 
         for tpl in templates:
-            sample_url = tpl.get("sample_image_url")
+            if isinstance(tpl, dict):
+                sample_url = tpl.get("sample_image_url")
+                slug = tpl.get("slug", "unknown")
+            else:
+                sample_url = getattr(tpl, "sample_image_url", None)
+                slug = getattr(tpl, "slug", "unknown")
+                
             if not sample_url:
                 continue
             try:
@@ -172,7 +186,7 @@ class VisualSimilarityTool(BaseTool):
                 score = len([m for m in matches if m.distance < 40]) / max(len(kp2), 1)
                 if score > best_score:
                     best_score = score
-                    best_template = tpl.get("slug", "unknown")
+                    best_template = slug
             except Exception:
                 continue
 

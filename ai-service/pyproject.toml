@@ -16,6 +16,7 @@ dependencies = [
     "opencv-python>=4.10.0",
     "numpy>=1.26.4",
     "google-genai>=1.0.0",
+    "pymupdf>=1.27.2.3",
 ]
 
 [tool.pytest.ini_options]

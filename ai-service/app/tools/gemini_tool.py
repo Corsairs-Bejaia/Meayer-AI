@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 class GeminiVisionTool(BaseTool):
     """
     General purpose Vision tool using Gemini 2.0 Flash.
-    Used for classification, OCR, and extraction when local tools fail.
     """
 
     @property
@@ -31,9 +30,6 @@ class GeminiVisionTool(BaseTool):
 
         try:
             client = genai.Client(api_key=settings.GEMINI_API_KEY)
-            
-            # Run in executor to avoid blocking (SDK might be sync or async depending on version)
-            # Current google-genai 1.0+ has async support but let's be safe
             loop = asyncio.get_event_loop()
             
             def _call():
@@ -48,7 +44,7 @@ class GeminiVisionTool(BaseTool):
             return ToolResult(
                 tool_name=self.name,
                 output={"text": text},
-                confidence=0.95, # Gemini is high confidence
+                confidence=0.95,
                 processing_time_ms=0.0
             )
         except Exception as e:
@@ -68,7 +64,6 @@ class GeminiOCRTool(GeminiVisionTool):
         )
         kwargs["prompt"] = prompt
         result = await super().execute(context, **kwargs)
-        # GeminiVisionTool already returns {"text": ...} in output
         return result
 
 class GeminiExtractorTool(GeminiVisionTool):
@@ -80,7 +75,18 @@ class GeminiExtractorTool(GeminiVisionTool):
         fields = kwargs.get("fields", [])
         missing = kwargs.get("missing_fields", fields)
         
-        field_descriptions = "\n".join([f"- {f['field_name']}: {f.get('description', '')}" for f in missing])
+        # Robustly handle both dicts and objects for fields
+        field_names = []
+        for f in missing:
+            if isinstance(f, dict):
+                name = f.get("field_name")
+                desc = f.get("description", "")
+            else:
+                name = getattr(f, "field_name", "unknown")
+                desc = getattr(f, "description", "")
+            field_names.append(f"- {name}: {desc}")
+            
+        field_descriptions = "\n".join(field_names)
         
         prompt = (
             f"You are a data extraction expert for Algerian documents. Type: {doc_type}. "
@@ -96,7 +102,6 @@ class GeminiExtractorTool(GeminiVisionTool):
             try:
                 import json
                 import re
-                # Clean JSON markdown if present
                 clean_json = re.sub(r"```json\n|\n```", "", result.output["text"]).strip()
                 data = json.loads(clean_json)
                 

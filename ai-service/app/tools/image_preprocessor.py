@@ -3,6 +3,7 @@ import numpy as np
 from PIL import Image
 import io
 import logging
+from typing import Any, Dict
 
 logger = logging.getLogger(__name__)
 

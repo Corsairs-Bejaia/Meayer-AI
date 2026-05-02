@@ -4,9 +4,31 @@ import httpx
 from typing import List, Optional
 
 from app.agents.base import BaseAgent, BaseTool, ToolResult, AgentContext
-from app.tools.gpt4o_vision_tool import GPT4oClassifierTool
+from app.tools.gemini_tool import GeminiVisionTool
 
 logger = logging.getLogger(__name__)
+
+class GeminiClassifierTool(GeminiVisionTool):
+    """
+    Refined Gemini vision for classification.
+    """
+    async def execute(self, context: AgentContext, **kwargs) -> ToolResult:
+        templates = kwargs.get("available_templates", [])
+        template_list = ", ".join([f"'{t.slug}'" for t in templates])
+        
+        prompt = (
+            "You are a professional Algerian document classifier. "
+            f"Based on this image, identify the document type. Return ONLY the JSON slug from this list: {template_list}. "
+            "If none match, return 'unknown'."
+        )
+        kwargs["prompt"] = prompt
+        result = await super().execute(context, **kwargs)
+        
+        if result.output and "text" in result.output:
+            doc_type = result.output["text"].strip().strip("'").strip('"').lower()
+            result.output["doc_type"] = doc_type
+        
+        return result
 
 # Keyword patterns for each document type
 KEYWORD_PATTERNS = {

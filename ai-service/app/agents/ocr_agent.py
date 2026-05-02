@@ -5,7 +5,7 @@ from typing import List, Optional
 from app.agents.base import BaseAgent, BaseTool, ToolResult, AgentContext
 from app.tools.paddleocr_tool import PaddleOCRTool
 from app.tools.tesseract_tool import TesseractTool
-from app.tools.gpt4o_vision_tool import GPT4oVisionOCRTool
+from app.tools.gemini_tool import GeminiOCRTool
 from app.tools.image_preprocessor import ImagePreprocessor
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ class OCRAgent(BaseAgent):
 
     @property
     def tools(self) -> List[BaseTool]:
-        return [PaddleOCRTool(), TesseractTool(), GPT4oVisionOCRTool()]
+        return [PaddleOCRTool(), TesseractTool(), GeminiOCRTool()]
 
     def __init__(self, confidence_threshold: float = 0.7):
         super().__init__(confidence_threshold)
@@ -79,7 +79,7 @@ class OCRAgent(BaseAgent):
 
         # If very low quality, start directly with GPT-4o
         if quality_score < 30:
-            tools_to_try = [GPT4oVisionOCRTool()]
+            tools_to_try = [GeminiOCRTool()]
 
         for tool in tools_to_try:
             try:

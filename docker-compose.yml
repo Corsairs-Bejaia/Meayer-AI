@@ -1,0 +1,28 @@
+services:
+  ai-service:
+    build:
+      context: ./ai-service
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./ai-service/.env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  scraping-service:
+    build:
+      context: ./scraping-service
+    ports:
+      - "8002:8002"
+    env_file:
+      - ./scraping-service/.env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

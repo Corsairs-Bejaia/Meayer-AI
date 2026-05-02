@@ -3,8 +3,7 @@ import re
 from typing import List, Optional, Dict, Any
 
 from app.agents.base import BaseAgent, BaseTool, ToolResult, AgentContext
-from app.tools.classifier_tools import KeywordClassifierTool, VisualSimilarityTool
-from app.tools.gpt4o_vision_tool import GPT4oClassifierTool
+from app.tools.classifier_tools import KeywordClassifierTool, VisualSimilarityTool, GeminiClassifierTool
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +11,7 @@ logger = logging.getLogger(__name__)
 class ClassifierAgent(BaseAgent):
     """
     Classifies uploaded documents by type.
-    Tool order: Keywords (free, fast) → Visual Similarity (free) → GPT-4o Vision (paid, accurate)
+    Tool order: Keywords (free, fast) → Visual Similarity (free) → Gemini Flash (accurate)
     """
 
     @property
@@ -24,7 +23,7 @@ class ClassifierAgent(BaseAgent):
         return [
             KeywordClassifierTool(),
             VisualSimilarityTool(),
-            GPT4oClassifierTool(),
+            GeminiClassifierTool(),
         ]
 
     def __init__(self, confidence_threshold: float = 0.7):

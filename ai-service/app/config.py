@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     # API Configuration
     INTERNAL_API_KEY: str = "shared-secret-with-nestjs-backend"
     OPENAI_API_KEY: str = ""
+    GEMINI_API_KEY: str = ""
     LOG_LEVEL: str = "info"
     SERVICE_NAME: str = "ai-service"
     VERSION: str = "0.1.0"
@@ -16,7 +17,8 @@ class Settings(BaseSettings):
 
     # Agent Configuration
     DEFAULT_CONFIDENCE_THRESHOLD: float = 0.7
-    ENABLE_GPT4O_FALLBACK: bool = True
+    ENABLE_GPT4O_FALLBACK: bool = False
+    ENABLE_GEMINI_FALLBACK: bool = True
     MAX_SELF_CORRECTION_RETRIES: int = 2
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

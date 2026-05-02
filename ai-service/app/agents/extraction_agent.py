@@ -3,7 +3,7 @@ from typing import List, Dict, Any, Optional
 
 from app.agents.base import BaseAgent, BaseTool, ToolResult, AgentContext
 from app.tools.extraction_tools import PositionalExtractorTool, RegexExtractorTool
-from app.tools.gpt4o_vision_tool import GPT4oExtractorTool
+from app.tools.gemini_tool import GeminiExtractorTool
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -23,14 +23,14 @@ class ExtractionAgent(BaseAgent):
         return [
             PositionalExtractorTool(),
             RegexExtractorTool(),
-            GPT4oExtractorTool(),
+            GeminiExtractorTool(),
         ]
 
     def __init__(self, confidence_threshold: float = 0.6):
         super().__init__(confidence_threshold)
         self._positional = PositionalExtractorTool()
         self._regex = RegexExtractorTool()
-        self._llm = GPT4oExtractorTool()
+        self._llm = GeminiExtractorTool()
 
     async def run(self, context: AgentContext, **kwargs) -> ToolResult:
         image_bytes: bytes = kwargs.get("image_bytes")
@@ -75,7 +75,7 @@ class ExtractionAgent(BaseAgent):
                 fields=fields,
                 missing_fields=missing,
             )
-            context.add_trace(self.name, "gpt4o_extractor",
+            context.add_trace(self.name, "gemini_extractor",
                               llm_result.confidence, f"self-correction retry {retries}")
 
             if llm_result.output:

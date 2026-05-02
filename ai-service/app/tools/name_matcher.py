@@ -39,6 +39,9 @@ def _normalize_french(name: str) -> str:
     name = re.sub(r"[^a-zA-Z\s'-]", " ", name)
     name = re.sub(r"[-_]", " ", name)
     name = name.lower()
+    # Normalize prefixes: "ben ali" -> "benali", "bou medienne" -> "boumedienne"
+    for prefix in ["ben", "bou", "bel", "abd", "el", "al"]:
+        name = re.sub(rf"\b{prefix}\s+", prefix, name)
     name = re.sub(r"\s+", " ", name).strip()
     return name
 

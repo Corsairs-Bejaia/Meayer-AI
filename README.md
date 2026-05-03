@@ -8,7 +8,7 @@
 **Keywords**: `Agentic AI`, `Doctor Verification`, `Algeria Digital Economy`, `Government Portal Automation`, `Document Forensics`, `Human-in-the-Loop`, `Autonomous Reasoning`, `CNAS/CASNOS Integration`.
 
 
-> **The next generation of trust for the Algerian digital economy.** An autonomous multi-agent system designed to verify, cross-reference, and authenticate documents with native government portal integration.
+> **The next generation of trust for the Algerian digital economy.** An autonomous **8-agent system** designed to verify, cross-reference, and authenticate documents with native government portal integration.
 
 ## Description
 

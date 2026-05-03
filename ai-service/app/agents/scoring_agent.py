@@ -18,9 +18,9 @@ class ScoringAgent(BaseAgent):
 
     async def run(self, context: AgentContext, **kwargs) -> ToolResult:
         documents_submitted = kwargs.get("documents_submitted", [])
-        kyc_result = kwargs.get("kyc_result", {})
-        cnas_result = kwargs.get("cnas_result", {})
-        casnos_result = kwargs.get("casnos_result", {})
+        kyc_result = kwargs.get("kyc_result") or {}
+        cnas_result = kwargs.get("cnas_result") or {}
+        casnos_result = kwargs.get("casnos_result") or {}
         consistency_result = context.get_result("consistency")
         authenticity_result = context.get_result("authenticity")
         

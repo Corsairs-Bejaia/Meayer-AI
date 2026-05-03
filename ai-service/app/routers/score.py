@@ -44,6 +44,7 @@ async def calculate_score(
         casnos_result=request.casnos_result,
         documents_submitted=request.documents_submitted,
         required_docs=request.required_docs,
+        trust_threshold=request.trust_threshold,
     )
 
     output = result.output or {}

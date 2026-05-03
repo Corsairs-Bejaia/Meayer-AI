@@ -1,29 +1,56 @@
-# Components and Their Interactions
+# Components and Interactions
 
-This document details how the different software components interact to fulfill a verification request.
-
-## Component Overview
-
-| Component | Responsibility | Interaction Pattern |
-| :--- | :--- | :--- |
-| **AgentOrchestrator** | Orchestrates the full pipeline lifecycle. | **Caller**: Invokes all agents. |
-| **AgentContext** | Shared data store for a single request. | **State Store**: Read/Write by all agents. |
-| **BaseAgent** | Interface for all agents. | **Contract**: Defines the `run()` method. |
-| **BaseTool** | Atomic unit of work (e.g., OCR, Image manipulation). | **Worker**: Executed by agents. |
-| **BrowserPool** | Manages a pool of headless Playwright instances. | **Singleton**: Used primarily by ScrapingAgent. |
+This document details how the software components collaborate to fulfill a doctor verification request.
 
 ## Interaction Sequence
 
-1.  **Request Initiation**: FastAPI router receives a request and instantiates an `AgentOrchestrator`.
-2.  **Context Creation**: The Orchestrator creates an `AgentContext` and attaches the raw document images.
-3.  **Parallel Execution**: 
-    - The `Classifier` writes the `doc_type` to the Context.
-    - `Authenticity` writes the `forgery_score` to the Context.
-    - `OCR` writes the raw `text` to the Context.
-4.  **Dependent Reasoning**:
-    - The `ExtractionAgent` waits for the `OCR` result, then reads the text and writes structured fields back to the Context.
-    - The `ConsistencyAgent` reads fields from all documents to check for name/ID mismatches.
-5.  **External Automation**:
-    - The `ScrapingAgent` checks if any CNAS documents exist. If so, it requests a browser from the `BrowserPool` and performs the live check.
-6.  **Final Scoring**:
-    - The `ScoringAgent` reads all results from the Context and applies weighted logic to produce a final score.
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as User/API
+    participant O as Orchestrator
+    participant C as Agent Context
+    participant A as Specialist Agents
+    participant T as Tools (OCR, Vision)
+    participant B as Browser Pool
+
+    U->>O: Submit Documents
+    O->>C: Initialize Request Context
+    
+    rect rgb(240, 248, 255)
+    Note over O, A: Parallel Phase
+    O->>A: Trigger Classifier, OCR, Authenticity
+    A->>T: Execute Atomic Tools
+    T-->>A: Raw Data (Text, Scores)
+    A->>C: Write Findings
+    end
+
+    rect rgb(245, 245, 2DC)
+    Note over O, A: Sequential Reasoning
+    O->>A: Trigger Extraction & Consistency
+    A->>C: Read Raw Data
+    A->>C: Write Structured Results
+    end
+
+    rect rgb(230, 255, 230)
+    Note over A, B: External Verification
+    A->>B: Request Browser Context
+    B->>A: Browser Ready
+    A->>A: Perform Live Gov Scraping
+    A->>C: Write Portal Status
+    end
+
+    O->>C: Final Scoring Calculation
+    C-->>O: Trust Decision
+    O-->>U: JSON Report + Verification Trace
+```
+
+## Component Responsibility Matrix
+
+| Component | Responsibility | Interaction Pattern |
+| :--- | :--- | :--- |
+| **AgentOrchestrator** | Orchestrates the full pipeline lifecycle and manages thread safety. | **Caller**: Primary entry point. |
+| **AgentContext** | The ephemeral shared data store for a single verification session. | **State Store**: Centralized memory. |
+| **BaseAgent** | Core logic interface for all specialized agents (OCR, Scraping, etc.). | **Contract**: Domain logic executor. |
+| **BaseTool** | Atomic unit of work (e.g., Tesseract OCR, Gemini Vision, ELA analysis). | **Worker**: Executed by agents. |
+| **BrowserPool** | Manages a thread-safe pool of headless Playwright instances. | **Resource**: Managed service. |

@@ -16,18 +16,23 @@ Our system utilizes a **Synchronous Orchestrator** pattern where agents work in 
 
 ```mermaid
 graph TD
-    A[Start Pipeline] --> B[Classifier Agent]
-    A --> C[Authenticity Agent]
-    A --> D[OCR Agent]
+    A[Start Pipeline]:::start --> B[Classifier Agent]:::agent
+    A --> C[Authenticity Agent]:::agent
+    A --> D[OCR Agent]:::agent
     
-    B & C & D --> E{Reasoning Layer}
+    B & C & D --> E{Reasoning Layer}:::core
     
-    E --> F[Extraction Agent]
-    F --> G[Consistency Agent]
-    G --> H[Scraping Agent]
+    E --> F[Extraction Agent]:::agent
+    F --> G[Consistency Agent]:::agent
+    G --> H[Scraping Agent]:::agent
     
-    H --> I[Scoring Agent]
-    I --> J[Final Report]
+    H --> I[Scoring Agent]:::result
+    I --> J[Final Report]:::result
+
+    classDef start fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#01579b
+    classDef agent fill:#ffffff,stroke:#37474f,stroke-width:2px,color:#37474f
+    classDef core fill:#ede7f6,stroke:#4527a0,stroke-width:2px,color:#4527a0
+    classDef result fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#2e7d32
 ```
 
 ### Agent Roles and Responsibilities

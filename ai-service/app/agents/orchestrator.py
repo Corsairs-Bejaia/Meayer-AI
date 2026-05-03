@@ -10,6 +10,7 @@ from app.agents.extraction_agent import ExtractionAgent
 from app.agents.authenticity_agent import AuthenticityAgent
 from app.agents.consistency_agent import ConsistencyAgent
 from app.agents.scoring_agent import ScoringAgent
+from app.agents.report_agent import ReportAgent
 from app.services.layer_registry import DOC_TYPE_TO_LAYER
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,7 @@ class AgentOrchestrator:
         self.authenticity = AuthenticityAgent()
         self.consistency = ConsistencyAgent()
         self.scoring = ScoringAgent()
+        self.report = ReportAgent()
 
     async def run_pipeline(
         self,
@@ -151,5 +153,20 @@ class AgentOrchestrator:
         await _emit("complete", "done", {
             k: v.output for k, v in context.results.items()
         })
+
+        # 7. Final Report Generation
+        if progress_callback:
+            await progress_callback("report", "running")
+        
+        # Use first document image for report tool (if needed)
+        first_doc = documents[0] if documents else {}
+        report_image = first_doc.get("_image_bytes")
+        
+        await self.report.run(
+            context,
+            image_bytes=report_image
+        )
+        if progress_callback:
+            await progress_callback("report", "completed", context.results["report"])
 
         return context

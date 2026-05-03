@@ -5,36 +5,35 @@ from pydantic import BaseModel, Field
 class TemplateField(BaseModel):
     field_name: str
     field_type: str = "text"
-    is_required: bool = False
+    is_required: bool = True
     description: Optional[str] = None
     validation_regex: Optional[str] = None
-    position_hint: Optional[Dict[str, float]] = None  
+    position_hint: Optional[Dict[str, float]] = None
 
 
 class Template(BaseModel):
     slug: str
     doc_type: str
     name: str
-    layer: Optional[str] = None  # New field for 6-layer model
-    fields: List[TemplateField] = []
-    sample_image_url: Optional[str] = None
+    layer: str = "L1"
+    fields: List[TemplateField]
 
 
-class DocumentInput(BaseModel):
-    file_url: str
+class PipelineDoc(BaseModel):
+    file_url: Optional[str] = None
+    image_base64: Optional[str] = None
     doc_type_hint: Optional[str] = None
-    template_slug: Optional[str] = None
-    layer: Optional[str] = None
 
 
 class PipelineRequest(BaseModel):
-    documents: List[DocumentInput]
+    documents: List[PipelineDoc]
     templates: List[Template] = []
-    stream: bool = False
     kyc_result: Optional[Dict[str, Any]] = None
     cnas_result: Optional[Dict[str, Any]] = None
     casnos_result: Optional[Dict[str, Any]] = None
     required_docs: List[str] = []
+    stream: bool = False
+    trust_threshold: float = 80.0
 
 
 class AgentTraceEntry(BaseModel):
@@ -42,7 +41,7 @@ class AgentTraceEntry(BaseModel):
     agent: str
     tool: str
     confidence: float
-    note: str
+    note: Optional[str] = None
 
 
 class PipelineResponse(BaseModel):
@@ -52,68 +51,31 @@ class PipelineResponse(BaseModel):
     processing_time_ms: float
 
 
-class ClassifyRequest(BaseModel):
-    file_url: str
-    available_templates: List[Template] = []
-
-
-class ClassifyResponse(BaseModel):
-    doc_type: Optional[str]
-    matched_template_slug: Optional[str]
+class ExtractionResult(BaseModel):
+    fields: Dict[str, Any]
     confidence: float
-    language: Optional[str]
-    reasoning: Optional[str]
-    tool_used: str
-    trace: List[Dict[str, Any]] = []
-
-
-class ExtractRequest(BaseModel):
-    file_url: str
-    doc_type: str = "document"
-    template: Template
-
-
-class ExtractResponse(BaseModel):
-    extracted_fields: Dict[str, Any]
-    raw_text: Optional[str]
-    language_detected: Optional[str]
-    extraction_method: str
-    missing_required: List[str] = []
-    processing_time_ms: float
-    trace: List[Dict[str, Any]] = []
-
-
-class AuthenticityRequest(BaseModel):
-    file_url: str
-    doc_type: Optional[str] = None
 
 
 class AuthenticityCheck(BaseModel):
-    check: str
+    tool: str
     passed: bool
     score: float
-    details: Optional[Any]
+    details: Any
 
 
-class AuthenticityResponse(BaseModel):
+class AuthenticityResult(BaseModel):
     authenticity_score: float
     is_suspicious: bool
     checks: List[AuthenticityCheck]
-    processing_time_ms: float
-    trace: List[Dict[str, Any]] = []
-
-
-class ConsistencyRequest(BaseModel):
-    documents: Dict[str, Dict[str, Any]]  
 
 
 class ConsistencyFlag(BaseModel):
-    type: str  
+    type: str
     check: str
     message: str
 
 
-class ConsistencyResponse(BaseModel):
+class ConsistencyResult(BaseModel):
     overall_consistent: bool
     consistency_score: float
     checks: List[Dict[str, Any]]
@@ -130,6 +92,7 @@ class ScoreRequest(BaseModel):
     required_docs: List[str] = []
     authenticity_results: Optional[Dict[str, Any]] = None
     consistency_result: Optional[Dict[str, Any]] = None
+    trust_threshold: float = 80.0
 
 
 class LayerScore(BaseModel):
@@ -150,4 +113,5 @@ class ScoreResponse(BaseModel):
     flags: List[Dict[str, Any]]
     documents_coverage: Dict[str, Any]
     decision: str
+    threshold_used: float = 80.0
     trace: List[Dict[str, Any]] = []

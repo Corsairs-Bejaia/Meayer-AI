@@ -37,6 +37,8 @@ async def run_pipeline(
         extra["casnos_result"] = request.casnos_result
     if request.required_docs:
         extra["required_docs"] = request.required_docs
+    if request.trust_threshold:
+        extra["trust_threshold"] = request.trust_threshold
 
     if not request.stream:
         context = await _orchestrator.run_pipeline(

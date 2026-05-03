@@ -3,7 +3,11 @@ builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
+<<<<<<< HEAD
 startCommand = "/bin/sh -c \"uv run uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8001}\""
+=======
+startCommand = "uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+>>>>>>> 067e51a (refactor: optimize browser pool, remove redundant health checks, and update deployment configuration)
 healthcheckPath = "/api/health"
 healthcheckTimeout = 60
 restartPolicyType = "on_failure"

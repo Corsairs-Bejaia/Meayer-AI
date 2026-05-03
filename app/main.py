@@ -86,17 +86,6 @@ async def proxy_scraping_openapi():
 
 @app.get("/api/health", tags=["health"])
 async def health_check():
-    cnas_reachable = False
-    cnas_ms = 0
-    try:
-        t = time.monotonic()
-        async with httpx.AsyncClient(timeout=4.0) as client:
-            r = await client.head("https://teledeclaration.cnas.dz")
-            cnas_reachable = r.status_code < 500
-            cnas_ms = int((time.monotonic() - t) * 1000)
-    except Exception:
-        pass
-
     return {
         "status": "ok",
         "service": settings.SERVICE_NAME,
@@ -106,7 +95,6 @@ async def health_check():
             "authenticity", "consistency", "scoring",
         ],
         "gemini_enabled": settings.ENABLE_GEMINI_FALLBACK,
-        "external_services": {"cnas": {"reachable": cnas_reachable, "response_time_ms": cnas_ms}},
     }
 
 

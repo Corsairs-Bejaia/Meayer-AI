@@ -45,5 +45,5 @@ RUN uv run playwright install chromium --with-deps
 
 EXPOSE 8001
 
-# PORT is injected by Railway at runtime; fall back to 8001 locally
-CMD ["sh", "-c", "uv run uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8001}"]
+# Use string form to ensure shell expansion of $PORT
+CMD uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT

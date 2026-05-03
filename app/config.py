@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     CNAS_RATE_LIMIT_SECONDS: int = 5
     CAPTCHA_MAX_RETRIES: int = 3
 
-    BROWSER_POOL_SIZE: int = 2
+    BROWSER_POOL_SIZE: int = 1
     BROWSER_HEADLESS: bool = True
     BROWSER_TIMEOUT_MS: int = 30000
     PAGE_LOAD_TIMEOUT_MS: int = 30000

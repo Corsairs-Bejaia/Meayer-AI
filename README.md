@@ -35,17 +35,6 @@ We believe in **AI-Augmented Trust**, not just AI automation. Our system is desi
 
 ---
 
-## Why This Wins
-
-This project isn't just a technical exercise; it's a solution to a multi-million dollar problem in Algeria. Here is what makes this a winning entry:
-
-1.  **Native Government Integration**: We have successfully automated the "last mile" by integrating live scraping of CNAS/CASNOS portals—a feat that traditional AI services cannot achieve.
-2.  **Deep Local Context**: Built specifically for the Algerian market, handling Arabic/French transliterations and local document formats that generic global providers fail to recognize.
-3.  **Production-Ready Forensic Layer**: Our Authenticity Agent uses ELA (Error Level Analysis) and AI-generation detection to catch sophisticated digital forgeries, moving beyond simple image checks.
-4.  **Optimized Performance**: Managed via `uv` and utilizing parallel agent execution, the system delivers sub-10-second comprehensive verifications.
-
----
-
 ## Documentation
 
 Detailed documentation is available in the [docs/](docs/) folder:

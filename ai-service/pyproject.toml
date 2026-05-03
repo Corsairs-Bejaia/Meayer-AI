@@ -17,6 +17,12 @@ dependencies = [
     "numpy>=1.26.4",
     "google-genai>=1.0.0",
     "pymupdf>=1.27.2.3",
+    "playwright>=1.43.0",
+    "beautifulsoup4>=4.12.3",
+    "lxml>=5.2.1",
+    "pytesseract>=0.3.13",
+    "pillow>=10.3.0",
+    "aioboto3>=13.1.1",
 ]
 
 [tool.pytest.ini_options]

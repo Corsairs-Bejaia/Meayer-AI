@@ -51,9 +51,42 @@ class PipelineResponse(BaseModel):
     processing_time_ms: float
 
 
+class ClassifyRequest(BaseModel):
+    image_url: Optional[str] = None
+    image_base64: Optional[str] = None
+    available_templates: List[Template] = []
+
+
+class ClassifyResponse(BaseModel):
+    doc_type: str
+    confidence: float
+    reasoning: Optional[str] = None
+    processing_time_ms: float = 0.0
+    trace: List[AgentTraceEntry] = []
+
+
+class ExtractRequest(BaseModel):
+    image_url: Optional[str] = None
+    image_base64: Optional[str] = None
+    doc_type: str
+    fields: List[TemplateField]
+
+
+class ExtractResponse(BaseModel):
+    fields: Dict[str, Any]
+    confidence: float
+    processing_time_ms: float
+    trace: List[AgentTraceEntry] = []
+
+
 class ExtractionResult(BaseModel):
     fields: Dict[str, Any]
     confidence: float
+
+
+class AuthenticityRequest(BaseModel):
+    file_url: str
+    doc_type: Optional[str] = None
 
 
 class AuthenticityCheck(BaseModel):
@@ -63,16 +96,37 @@ class AuthenticityCheck(BaseModel):
     details: Any
 
 
+class AuthenticityResponse(BaseModel):
+    authenticity_score: float
+    is_suspicious: bool
+    checks: List[AuthenticityCheck]
+    processing_time_ms: float = 0.0
+    trace: List[AgentTraceEntry] = []
+
+
 class AuthenticityResult(BaseModel):
     authenticity_score: float
     is_suspicious: bool
     checks: List[AuthenticityCheck]
 
 
+class ConsistencyRequest(BaseModel):
+    documents: Dict[str, Dict[str, Any]]
+
+
 class ConsistencyFlag(BaseModel):
     type: str
     check: str
     message: str
+
+
+class ConsistencyResponse(BaseModel):
+    overall_consistent: bool
+    consistency_score: float
+    checks: List[Dict[str, Any]]
+    flags: List[ConsistencyFlag]
+    processing_time_ms: float
+    trace: List[AgentTraceEntry] = []
 
 
 class ConsistencyResult(BaseModel):

@@ -18,10 +18,16 @@ logger.addHandler(handler)
 logger.setLevel(settings.LOG_LEVEL.upper())
 
 
+from app.services.browser_pool import browser_pool
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.SERVICE_NAME} v{settings.VERSION}")
+    # Initialize Playwright browser pool
+    await browser_pool.start()
     yield
+    # Cleanup Playwright browser pool
+    await browser_pool.stop()
     logger.info(f"Shutting down {settings.SERVICE_NAME}")
 
 

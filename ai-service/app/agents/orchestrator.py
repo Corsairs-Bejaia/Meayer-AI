@@ -9,6 +9,7 @@ from app.agents.ocr_agent import OCRAgent
 from app.agents.extraction_agent import ExtractionAgent
 from app.agents.authenticity_agent import AuthenticityAgent
 from app.agents.consistency_agent import ConsistencyAgent
+from app.agents.scraping_agent import ScrapingAgent
 from app.agents.scoring_agent import ScoringAgent
 from app.agents.report_agent import ReportAgent
 from app.services.layer_registry import DOC_TYPE_TO_LAYER
@@ -32,6 +33,7 @@ class AgentOrchestrator:
         self.extraction = ExtractionAgent()
         self.authenticity = AuthenticityAgent()
         self.consistency = ConsistencyAgent()
+        self.scraping = ScrapingAgent()
         self.scoring = ScoringAgent()
         self.report = ReportAgent()
 
@@ -133,6 +135,16 @@ class AgentOrchestrator:
 
         await self.consistency.run(context, documents=documents_fields)
         await _emit("consistency", "completed", context.get_result("consistency"))
+
+        await _emit("scraping", "started")
+        await self.scraping.run(context, **extra_kwargs)
+        scraping_res = context.get_result("scraping")
+        
+        # If scraping succeeded, merge it into extra_kwargs for scoring
+        if scraping_res and scraping_res.output and scraping_res.output.get("status") != "skipped":
+            extra_kwargs["cnas_result"] = scraping_res.output
+            
+        await _emit("scraping", "completed", scraping_res)
 
         await _emit("scoring", "started")
         doc_types_submitted = []

@@ -39,6 +39,6 @@ class Settings(BaseSettings):
     CNAS_FORM_CAPTCHA_SELECTOR: str = 'input[name="captchaValue"]'
     CNAS_SUBMIT_SELECTOR: str = 'input[type="submit"]'
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_file=[".env", "../.env"], extra="ignore")
 
 settings = Settings()

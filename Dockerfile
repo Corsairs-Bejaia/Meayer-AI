@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.11-slim
 
 # Install system dependencies for OpenCV, Tesseract, and Playwright
 RUN apt-get update && apt-get install -y \
@@ -30,20 +30,18 @@ ENV PATH="/uv/bin:${PATH}"
 
 WORKDIR /app
 
-# Copy workspace configuration
-COPY pyproject.toml uv.lock ./
+# Copy dependency files
+COPY pyproject.toml uv.lock .env* ./
 
-# Copy the ai-service package
-COPY ai-service/ ./ai-service/
+# Copy application source
+COPY app/ ./app/
+COPY static/ ./static/
 
-# Install dependencies for the whole workspace
+# Install dependencies
 RUN uv sync --frozen
 
 # Install Playwright's Chromium browser
 RUN uv run playwright install chromium --with-deps
-
-# Set working directory to the service folder for execution
-WORKDIR /app/ai-service
 
 EXPOSE 8001
 

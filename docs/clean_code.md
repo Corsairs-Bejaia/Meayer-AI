@@ -5,14 +5,14 @@ The project follows a modular, agentic architecture designed for scalability, ma
 ## Directory Layout
 
 ```text
-ai-service/
-├── app/
-├── ai-service/          # Main application directory
+├── app/                 # Main application source (FastAPI)
+├── tests/               # Comprehensive test suite
 ├── docs/                # Extended documentation
 ├── Dockerfile           # Global Docker configuration
 ├── railway.toml         # Global Railway deployment config
-├── pyproject.toml       # Root workspace configuration
-└── uv.lock              # Dependency lockfile
+├── pyproject.toml       # Project dependencies and configuration
+├── uv.lock              # Dependency lockfile
+└── .env                 # Environment variables (R2, API Keys)
 ```
 
 ## Core Design Patterns

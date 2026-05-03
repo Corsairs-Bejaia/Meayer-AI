@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List, Optional
+from typing import List
 
 from app.agents.base import BaseAgent, BaseTool, ToolResult, AgentContext
 from app.services.layer_registry import LAYER_DEFINITIONS, DOC_TYPE_TO_LAYER
@@ -69,9 +69,12 @@ class ScoringAgent(BaseAgent):
             final_score *= (0.8 + 0.2 * c_conf)
 
         # External data boosts
-        if kyc_result.get("passed"): final_score = min(100, final_score + 5)
-        if cnas_result.get("valid"): final_score = min(100, final_score + 5)
-        if casnos_result.get("valid"): final_score = min(100, final_score + 5)
+        if kyc_result.get("passed"):
+            final_score = min(100, final_score + 5)
+        if cnas_result.get("valid"):
+            final_score = min(100, final_score + 5)
+        if casnos_result.get("valid"):
+            final_score = min(100, final_score + 5)
 
         # Final decision logic
         threshold = kwargs.get("trust_threshold", 80.0)

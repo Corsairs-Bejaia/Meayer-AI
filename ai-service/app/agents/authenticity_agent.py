@@ -37,7 +37,7 @@ class AuthenticityAgent(BaseAgent):
         self._ai_detect = AIGenerationDetectorTool()
 
     async def run(self, context: AgentContext, **kwargs) -> ToolResult:
-        image_bytes: bytes = kwargs.get("image_bytes")
+        kwargs.get("image_bytes")
 
         quick_results = await asyncio.gather(
             self._stamp.execute(context, **kwargs),

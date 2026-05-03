@@ -1,7 +1,6 @@
-import asyncio
 import base64
 import logging
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from openai import AsyncOpenAI
 

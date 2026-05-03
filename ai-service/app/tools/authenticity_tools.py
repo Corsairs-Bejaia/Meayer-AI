@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 import logging
-from typing import Dict, List, Any, Optional
 from app.agents.base import BaseTool, ToolResult, AgentContext
+from app.tools.gemini_tool import GeminiVisionTool
 
 logger = logging.getLogger(__name__)
 
@@ -210,7 +210,6 @@ class MetadataAnalyzerTool(BaseTool):
             return ToolResult(tool_name=self.name, output=None, confidence=0.5,
                               processing_time_ms=0.0, error=str(e))
 
-from app.tools.gemini_tool import GeminiVisionTool
 
 class AIGenerationDetectorTool(GeminiVisionTool):
     @property

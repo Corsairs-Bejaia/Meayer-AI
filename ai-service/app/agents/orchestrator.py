@@ -3,7 +3,7 @@ import logging
 import httpx
 from typing import Any, Callable, Awaitable, Dict, List, Optional
 
-from app.agents.base import AgentContext, ToolResult
+from app.agents.base import AgentContext
 from app.agents.classifier_agent import ClassifierAgent
 from app.agents.ocr_agent import OCRAgent
 from app.agents.extraction_agent import ExtractionAgent
@@ -12,7 +12,6 @@ from app.agents.consistency_agent import ConsistencyAgent
 from app.agents.scraping_agent import ScrapingAgent
 from app.agents.scoring_agent import ScoringAgent
 from app.agents.report_agent import ReportAgent
-from app.services.layer_registry import DOC_TYPE_TO_LAYER
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +72,7 @@ class AgentOrchestrator:
             )
             for i, doc in enumerate(documents)
         ]
-        classification_results = await asyncio.gather(*classify_tasks, return_exceptions=True)
+        await asyncio.gather(*classify_tasks, return_exceptions=True)
         await _emit("classification", "completed", context.get_result("classifier"))
 
         await _emit("ocr_extraction", "started")
@@ -167,8 +166,7 @@ class AgentOrchestrator:
         })
 
         # 7. Final Report Generation
-        if progress_callback:
-            await progress_callback("report", "running")
+        await _emit("report", "running")
         
         # Use first document image for report tool (if needed)
         first_doc = documents[0] if documents else {}

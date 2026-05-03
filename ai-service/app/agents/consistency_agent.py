@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from app.agents.base import BaseAgent, BaseTool, ToolResult, AgentContext
 from app.tools.name_matcher import NameMatcher
-from app.services.layer_registry import DOC_TYPE_TO_LAYER
 
 logger = logging.getLogger(__name__)
 

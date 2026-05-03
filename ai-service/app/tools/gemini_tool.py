@@ -1,6 +1,5 @@
 import logging
 import asyncio
-from typing import Optional, Dict, Any
 from google import genai
 from app.agents.base import BaseTool, ToolResult, AgentContext
 from app.config import settings

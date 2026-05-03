@@ -1,9 +1,8 @@
 import logging
 import re
-import httpx
-from typing import List, Optional, Any
+from typing import Optional
 
-from app.agents.base import BaseAgent, BaseTool, ToolResult, AgentContext
+from app.agents.base import BaseTool, ToolResult, AgentContext
 from app.tools.gemini_tool import GeminiVisionTool
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,6 @@
 import re
 import logging
-from typing import Dict, List, Optional, Any
+from typing import Dict, List
 
 from app.agents.base import BaseTool, ToolResult, AgentContext
 
@@ -99,7 +99,8 @@ class PositionalExtractorTool(BaseTool):
             
             for line in lines:
                 bbox = line.get("bbox")
-                if not bbox: continue
+                if not bbox:
+                    continue
                 # bbox is usually [[x,y], [x,y], [x,y], [x,y]] or [x,y,w,h]
                 # simplification:
                 if isinstance(bbox[0], list):

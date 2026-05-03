@@ -1,5 +1,5 @@
 import logging
-from typing import List, Dict, Any
+from typing import List
 
 from app.agents.base import BaseAgent, BaseTool, ToolResult, AgentContext
 from app.tools.gemini_tool import GeminiVisionTool

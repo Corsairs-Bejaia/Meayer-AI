@@ -5,20 +5,22 @@ import httpx
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from pythonjsonlogger import jsonlogger
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.responses import JSONResponse
+from pythonjsonlogger.json import JsonFormatter
 
 from app.config import settings
+from app.services.browser_pool import browser_pool
 from app.routers import pipeline, classify, extract, authenticity, consistency, score, templates
 
 
 logger = logging.getLogger()
 handler = logging.StreamHandler(sys.stdout)
-handler.setFormatter(jsonlogger.JsonFormatter("%(asctime)s %(levelname)s %(name)s %(message)s"))
+handler.setFormatter(JsonFormatter("%(asctime)s %(levelname)s %(name)s %(message)s"))
 logger.addHandler(handler)
 logger.setLevel(settings.LOG_LEVEL.upper())
 
 
-from app.services.browser_pool import browser_pool
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -53,8 +55,6 @@ app = FastAPI(
 )
 
 
-from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.responses import JSONResponse
 
 @app.get("/docs", include_in_schema=False)
 async def unified_swagger_ui():

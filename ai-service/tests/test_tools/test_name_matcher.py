@@ -1,4 +1,3 @@
-import pytest
 from app.tools.name_matcher import NameMatcher
 
 
@@ -72,18 +71,18 @@ class TestCompareAllPairs:
 
     def test_two_matching_names(self):
         matched, score = NameMatcher.compare_all_name_pairs([
-            , "ahmed benali"
+            "Ahmed Benali", "ahmed benali"
         ])
         assert matched
 
     def test_three_consistent_names(self):
         matched, score = NameMatcher.compare_all_name_pairs([
-            , "Fatima Z Ait", "Fatima Zohra AIT"
+            "Fatima Zait", "Fatima Z Ait", "Fatima Zohra AIT"
         ])
         assert score > 0.6  
 
     def test_mismatch_among_names(self):
         matched, score = NameMatcher.compare_all_name_pairs([
-            , "Karim Ziani", "Ahmed Benali"
+            "Farid Boudjenah", "Karim Ziani", "Ahmed Benali"
         ])
         assert not matched  

@@ -1,6 +1,4 @@
 import pytest
-import asyncio
-from unittest.mock import AsyncMock, MagicMock
 from app.agents.base import BaseAgent, BaseTool, ToolResult, AgentContext
 
 

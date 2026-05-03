@@ -2,14 +2,14 @@ import asyncio
 import json
 import logging
 import time
-from typing import AsyncGenerator, Dict, List, Optional
+from typing import AsyncGenerator
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
 from app.agents.orchestrator import AgentOrchestrator
 from app.dependencies import verify_api_key
-from app.schemas.schemas import PipelineRequest, PipelineResponse
+from app.schemas.schemas import PipelineRequest
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/pipeline", tags=["pipeline"])

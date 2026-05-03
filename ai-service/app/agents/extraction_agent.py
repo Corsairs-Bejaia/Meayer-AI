@@ -1,5 +1,5 @@
 import logging
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 from app.agents.base import BaseAgent, BaseTool, ToolResult, AgentContext
 from app.tools.extraction_tools import PositionalExtractorTool, RegexExtractorTool

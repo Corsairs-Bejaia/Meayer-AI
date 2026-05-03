@@ -48,7 +48,7 @@ async def calculate_score(
     )
 
     output = result.output or {}
-    elapsed = round((time.time() - start) * 1000, 1)
+    round((time.time() - start) * 1000, 1)
 
     layer_scores = {}
     for k, v in output.get("layer_scores", {}).items():

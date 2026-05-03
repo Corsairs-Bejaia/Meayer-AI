@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import io
-from typing import List, Dict, Any
+from typing import Dict, Any
 
 import pytesseract
 from PIL import Image

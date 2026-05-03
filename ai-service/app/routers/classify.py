@@ -18,7 +18,7 @@ async def classify_document(
     request: ClassifyRequest,
     _: str = Depends(verify_api_key),
 ):
-    start = time.time()
+    time.time()
     context = AgentContext()
 
     image_bytes = None

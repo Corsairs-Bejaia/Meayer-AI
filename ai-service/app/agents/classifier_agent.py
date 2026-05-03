@@ -1,8 +1,7 @@
 import logging
-import re
-from typing import List, Optional, Dict, Any
+from typing import List
 
-from app.agents.base import BaseAgent, BaseTool, ToolResult, AgentContext
+from app.agents.base import BaseAgent, BaseTool
 from app.tools.classifier_tools import KeywordClassifierTool, VisualSimilarityTool, GeminiClassifierTool
 
 logger = logging.getLogger(__name__)

@@ -7,15 +7,12 @@ The project follows a modular, agentic architecture designed for scalability, ma
 ```text
 ai-service/
 ├── app/
-│   ├── agents/          # Specialized AI agents (Classifier, OCR, etc.)
-│   ├── routers/         # API endpoints (FastAPI)
-│   ├── services/        # Shared services (Browser Pool, Layer Registry)
-│   ├── tools/           # Atomic tools used by agents (Tesseract, Gemini, etc.)
-│   ├── config.py        # Environment-driven configuration
-│   └── main.py          # FastAPI application entry point
-├── tests/               # Comprehensive test suite
+├── ai-service/          # Main application directory
 ├── docs/                # Extended documentation
-└── pyproject.toml       # Dependency management via uv
+├── Dockerfile           # Global Docker configuration
+├── railway.toml         # Global Railway deployment config
+├── pyproject.toml       # Root workspace configuration
+└── uv.lock              # Dependency lockfile
 ```
 
 ## Core Design Patterns

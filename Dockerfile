@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.13-slim
 
 # Install system dependencies for OpenCV, Tesseract, and Playwright
 RUN apt-get update && apt-get install -y \
@@ -21,24 +21,31 @@ RUN apt-get update && apt-get install -y \
     libxrandr2 \
     libgbm1 \
     libasound2 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uv/bin/uv
+ENV PATH="/uv/bin:${PATH}"
 
 WORKDIR /app
 
-# Copy only the dependency manifest first (better layer caching)
-COPY pyproject.toml .
+# Copy workspace configuration
+COPY pyproject.toml uv.lock ./
 
-# Install all Python dependencies declared in pyproject.toml
-# pip reads [project].dependencies directly — no requirements.txt needed
-RUN pip install --no-cache-dir .
+# Copy the ai-service package
+COPY ai-service/ ./ai-service/
 
-# Install Playwright's Chromium browser + its own deps
-RUN playwright install chromium --with-deps
+# Install dependencies for the whole workspace
+RUN uv sync --frozen
 
-# Copy application source
-COPY . .
+# Install Playwright's Chromium browser
+RUN uv run playwright install chromium --with-deps
+
+# Set working directory to the service folder for execution
+WORKDIR /app/ai-service
 
 EXPOSE 8001
 
 # PORT is injected by Railway at runtime; fall back to 8001 locally
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8001}"]
+CMD ["sh", "-c", "uv run uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8001}"]

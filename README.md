@@ -9,14 +9,20 @@
 
 ## Overview
 
-This repository houses a sophisticated document verification engine. It moves beyond simple OCR by utilizing a **reasoning-based agentic architecture** to handle the complexities of Algerian administrative documents, forgery detection, and live government verification.
+This repository houses a specialized **Doctor Verification Engine**. It uses a reasoning-based agentic architecture to prove the legitimacy of medical professionals by cross-referencing Algerian administrative documents, detecting forgeries, and performing live verification against government portals.
 
 ```mermaid
 graph LR
-    Input[Document Upload] --> AgenticPipeline[Agentic Orchestrator]
-    AgenticPipeline --> GovPortals[Live Govt Verification]
-    AgenticPipeline --> Result[Final Trust Score]
-    Result --> HITL[Human-in-the-Loop Review]
+    Input[Document Upload]:::input --> AgenticPipeline[Agentic Orchestrator]:::core
+    AgenticPipeline --> GovPortals[Live Govt Verification]:::gov
+    AgenticPipeline --> Result[Final Trust Score]:::result
+    Result --> HITL[Human-in-the-Loop Review]:::hitl
+
+    classDef input fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#01579b
+    classDef core fill:#ede7f6,stroke:#4527a0,stroke-width:2px,color:#4527a0
+    classDef gov fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#2e7d32
+    classDef result fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100
+    classDef hitl fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#c2185b
 ```
 
 ## Why an Agentic System?

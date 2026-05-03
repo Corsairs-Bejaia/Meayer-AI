@@ -43,7 +43,7 @@ RUN uv sync --frozen
 # Install Playwright's Chromium browser
 RUN uv run playwright install chromium --with-deps
 
-EXPOSE 8001
+EXPOSE 8000
 
-# Use string form to ensure shell expansion of $PORT
-CMD uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+# Use explicit shell to ensure $PORT is expanded
+CMD ["sh", "-c", "uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT"]

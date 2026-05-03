@@ -5,11 +5,14 @@
 [![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
+**Keywords**: `Agentic AI`, `Doctor Verification`, `Algeria Digital Economy`, `Government Portal Automation`, `Document Forensics`, `Human-in-the-Loop`, `Autonomous Reasoning`, `CNAS/CASNOS Integration`.
+
+
 > **The next generation of trust for the Algerian digital economy.** An autonomous multi-agent system designed to verify, cross-reference, and authenticate documents with native government portal integration.
 
-## Overview
+## Description
 
-This repository houses a specialized **Doctor Verification Engine**. It uses a reasoning-based agentic architecture to prove the legitimacy of medical professionals by cross-referencing Algerian administrative documents, detecting forgeries, and performing live verification against government portals.
+This system provides a foolproof method for authenticating medical professionals in the Algerian digital economy. By combining advanced AI agents with live, automated verification of government databases (CNAS/CASNOS), the engine ensures that only legitimate doctors can access or provide services in regulated environments. It solves the critical challenge of "identity fraud" and "fake credentials" through autonomous reasoning and multi-layered forensic checks.
 
 ```mermaid
 graph LR
@@ -42,6 +45,9 @@ We believe in **AI-Augmented Trust**, not just AI automation. Our system is desi
 *   **Explainable Decisions**: Instead of a "Yes/No," the system provides reasoning: "Rejected: NIN mismatch detected between Identity Card and Medical Diploma."
 
 ## Documentation
+
+> [!IMPORTANT]
+> **Explore our deep-dive guides** to understand how we solved complex Algerian document verification with an agentic approach.
 
 Detailed documentation is available in the [docs/](docs/) folder:
 

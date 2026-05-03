@@ -47,7 +47,18 @@ graph TD
     A7 --> A6
     A6 --> A8
     A8 --> Output[Final Decision & Report]
+    A8 --> Output[Final Decision & Report]
 ```
+
+### The 7 Autonomous Agents
+
+1.  **Classifier Agent**: Examines incoming images and determines the exact document type (e.g., National ID, Medical Diploma, CNAS Attestation) using visual similarity and LLM fallback.
+2.  **OCR Agent**: Scans the images and converts pixels to text. It adapts its strategy on the fly (PaddleOCR vs Tesseract vs Gemini Vision) depending on the blurriness and quality of the scan.
+3.  **Extraction Agent**: Takes the raw text from the OCR Agent and maps it to structured JSON templates (e.g., pulling out just the `attestation_number` and `employer_id` from a noisy page).
+4.  **Authenticity Agent**: The forensic expert. It runs parallel computer-vision checks on the image to detect photoshopped pixels (ELA analysis), fake stamps, forged signatures, and AI generation artifacts (DALL-E/Midjourney).
+5.  **Consistency Agent**: Acts as the cross-referencer. It takes the structured data from all uploaded documents and ensures they belong to the same person (e.g., fuzzy-matching Arabic and French transliterations of the doctor's name across their ID and Diploma).
+6.  **Scraping Agent**: The web automation bot. If a CNAS document is detected, it spins up a headless browser, solves government CAPTCHAs, logs into `elhanaa.cnas.dz`, and verifies the extracted employer numbers against the live database.
+7.  **Scoring & Report Agents**: The Scoring Agent takes all the findings, applies a configurable `trust_threshold`, and issues a final `approved`/`review`/`rejected` decision. The Report Agent then compiles the entire journey into a professional, human-readable Markdown report for the dashboard.
 
 ### 2. Internal Agent Communication
 
@@ -71,21 +82,6 @@ sequenceDiagram
 ### 3. Self-Correction Loop
 
 The Extraction, OCR, and Scraping agents utilize feedback loops. If the initial tool (e.g., Tesseract) fails or returns a low confidence score, the agent automatically invokes a higher-tier tool (e.g., Gemini Vision) with a specific recovery prompt.
-
----
-
-## Service Specifications
-
-### AI Service (Port 8000)
-
-*   **Classifier Agent**: Multi-strategy identification using keyword patterns, visual similarity, and LLM-vision fallback.
-*   **OCR Agent**: Adaptive engine selection (PaddleOCR / Tesseract / Gemini) based on estimated image quality (Laplacian variance).
-*   **Extraction Agent**: Template-aware field parsing with automated retry logic for missing required fields.
-*   **Authenticity Agent**: Parallel CV analysis including Stamp detection, Signature complexity check, AI generation detection, and Error Level Analysis (ELA).
-*   **Consistency Agent**: Cross-document validation with token-set fuzzy matching for Arabic/French name transliteration.
-*   **Scraping Agent**: Stateless Playwright worker integrated directly into the pipeline for CNAS portal interaction, powered by an internal CAPTCHA solver.
-*   **Scoring Agent**: Deterministic tiered judge that assigns a Trust Score (0-100) based on Identity, Employment, Credentials, and Integrity, supporting a dynamic `trust_threshold`.
-*   **Report Agent**: Consumes the entire verification trace to generate a clean, professional Markdown report via Gemini AI.
 
 ---
 

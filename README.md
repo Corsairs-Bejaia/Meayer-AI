@@ -5,52 +5,42 @@
 [![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
-> **The next generation of trust for the Algerian digital economy.** An autonomous, multi-agent system designed to verify, cross-reference, and authenticate documents with native government portal integration.
-
----
+> **The next generation of trust for the Algerian digital economy.** An autonomous multi-agent system designed to verify, cross-reference, and authenticate documents with native government portal integration.
 
 ## Overview
 
 This repository houses a sophisticated document verification engine. It moves beyond simple OCR by utilizing a **reasoning-based agentic architecture** to handle the complexities of Algerian administrative documents, forgery detection, and live government verification.
 
----
-
 ## Why an Agentic System?
 
-Traditional document processing pipelines are brittle—if a single regex fails or an image is slightly blurry, the whole process breaks. We chose an **Agentic System** because:
+Traditional document processing pipelines are brittle. If a single regex fails or an image is slightly blurry, the whole process breaks. We chose an **Agentic System** because:
 
 1.  **Resilience through Reasoning**: Our agents don't just follow scripts; they make decisions. If Tesseract fails to read a blurry ID, the OCR Agent "decides" to invoke Gemini Vision for a more expensive but accurate recovery.
 2.  **Autonomous Problem Solving**: Navigating government portals like `elhanaa.cnas.dz` requires handling dynamic states and CAPTCHAs. Our Scraping Agent acts as a virtual operator, managing browser sessions autonomously.
 3.  **Modular Scalability**: New document types or verification layers can be added as specialized agents without refactoring the core pipeline.
 
----
-
 ## Human-in-the-Loop (HITL)
 
 We believe in **AI-Augmented Trust**, not just AI automation. Our system is designed with safety at its core:
 
--   **Confidence Thresholds**: Every decision is backed by a confidence score. If an agent is unsure (e.g., < 80% confidence), the system automatically flags the request for human review.
--   **Transparency & Auditability**: Every verification includes a "trace"—a microscopic log of every tool used, every thought process, and every piece of evidence gathered. Humans can step in, view the evidence, and make the final call with 100% clarity.
--   **Explainable Decisions**: Instead of a "Yes/No," the system provides reasoning: *"Rejected: NIN mismatch detected between Identity Card and Medical Diploma."*
-
----
+*   **Confidence Thresholds**: Every decision is backed by a confidence score. If an agent is unsure (e.g., < 80% confidence), the system automatically flags the request for human review.
+*   **Transparency and Auditability**: Every verification includes a "trace", which is a microscopic log of every tool used, every thought process, and every piece of evidence gathered. Humans can step in, view the evidence, and make the final call with 100% clarity.
+*   **Explainable Decisions**: Instead of a "Yes/No," the system provides reasoning: "Rejected: NIN mismatch detected between Identity Card and Medical Diploma."
 
 ## Documentation
 
 Detailed documentation is available in the [docs/](docs/) folder:
 
-### Architecture & Design
-- **[System Architecture](docs/architecture.md)**: A short explanation of the core architecture.
-- **[System Architecture Diagram](docs/system_architecture_diagram.md)**: A Mermaid-based technical flow of the pipeline.
-- **[Visual Representation](docs/visual_representation.md)**: A high-level visual view of the system ecosystem.
-- **[Components & Interactions](docs/components_and_interactions.md)**: Deep dive into how agents, tools, and the context interact.
+### Architecture and Design
+* **[System Architecture](docs/architecture.md)**: A short explanation of the core architecture.
+* **[System Architecture Diagram](docs/system_architecture_diagram.md)**: A Mermaid-based technical flow of the pipeline.
+* **[Visual Representation](docs/visual_representation.md)**: A high-level visual view of the system ecosystem.
+* **[Components and Interactions](docs/components_and_interactions.md)**: Deep dive into how agents, tools, and the context interact.
 
-### Code & Setup
-- **[Clean Code Structure](docs/clean_code.md)**: Explanation of the project layout and design patterns.
-- **[Setup Instructions](docs/setup.md)**: How to get the service running locally with `uv`.
-- **[Deployment Guide](docs/deployment.md)**: Instructions for deploying to **Railway** and Docker.
-
----
+### Code and Setup
+* **[Clean Code Structure](docs/clean_code.md)**: Explanation of the project layout and design patterns.
+* **[Setup Instructions](docs/setup.md)**: How to get the service running locally with `uv`.
+* **[Deployment Guide](docs/deployment.md)**: Instructions for deploying to **Railway** and Docker.
 
 ## Deployment
 
@@ -63,8 +53,6 @@ To deploy:
 
 See the **[Deployment Guide](docs/deployment.md)** for more details.
 
----
-
 ## Quick Start
 
 ```bash
@@ -76,5 +64,4 @@ uv run playwright install chromium
 uv run uvicorn app.main:app --port 8000 --reload
 ```
 
----
-Corsairs-Bejaia Verification Service - 2026 Hackathon.
+Corsairs-Bejaia Verification Service 2026 Hackathon.

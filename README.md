@@ -11,6 +11,14 @@
 
 This repository houses a sophisticated document verification engine. It moves beyond simple OCR by utilizing a **reasoning-based agentic architecture** to handle the complexities of Algerian administrative documents, forgery detection, and live government verification.
 
+```mermaid
+graph LR
+    Input[Document Upload] --> AgenticPipeline[Agentic Orchestrator]
+    AgenticPipeline --> GovPortals[Live Govt Verification]
+    AgenticPipeline --> Result[Final Trust Score]
+    Result --> HITL[Human-in-the-Loop Review]
+```
+
 ## Why an Agentic System?
 
 Traditional document processing pipelines are brittle. If a single regex fails or an image is slightly blurry, the whole process breaks. We chose an **Agentic System** because:
@@ -33,6 +41,7 @@ Detailed documentation is available in the [docs/](docs/) folder:
 
 ### Architecture and Design
 * **[System Architecture](docs/architecture.md)**: A short explanation of the core architecture.
+* **[Agentic System Design](docs/agentic_design.md)**: Detailed philosophy and multi-agent coordination.
 * **[System Architecture Diagram](docs/system_architecture_diagram.md)**: A Mermaid-based technical flow of the pipeline.
 * **[Visual Representation](docs/visual_representation.md)**: A high-level visual view of the system ecosystem.
 * **[Components and Interactions](docs/components_and_interactions.md)**: Deep dive into how agents, tools, and the context interact.
